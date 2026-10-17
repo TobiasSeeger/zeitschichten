@@ -15,3 +15,6 @@ scripts/altkarten/.cache
 # Lokale Einstellungen
 .env*.local
 deploy/deploy.env
+
+# Lokale Notizen für Claude
+CLAUDE.local.md
