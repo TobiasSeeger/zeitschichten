@@ -1,7 +1,7 @@
 import { create } from "zustand"
 
 // Eigene Kartendienste bleiben im Browser gespeichert (nicht die Dateien)
-const STORAGE_KEY = "roemerlager:eigene-dienste"
+const STORAGE_KEY = "heimatschichten:eigene-dienste"
 function loadServices() {
 	try {
 		return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]")

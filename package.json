@@ -1,9 +1,9 @@
 {
-	"name": "roemerlager-westfalen",
+	"name": "heimatschichten",
 	"version": "0.1.0",
-	"description": "Web-Karte der augusteischen Römerlager in Westfalen mit Potenzialmodell für unentdeckte Marschlager",
+	"description": "Historische Karten für den Kreis Minden-Lübbecke, Fork von roemerlager-westfalen",
 	"license": "MIT",
-	"author": "Tim Krämer",
+	"author": "Tobias Seeger",
 	"homepage": "https://experiments.erleben.app/heimatschichten/",
 	"repository": {
 		"type": "git",

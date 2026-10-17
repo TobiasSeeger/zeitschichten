@@ -36,7 +36,7 @@ function Title() {
 	return (
 		<Box>
 			<Typography variant="h6" component="h2" sx={{ lineHeight: 1.25 }}>
-				{CITATION.title}
+				{CITATION.name}
 			</Typography>
 			<Typography variant="caption" color="text.secondary">
 				{CITATION.subtitle}

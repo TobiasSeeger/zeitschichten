@@ -32,7 +32,7 @@ export default function SourcesPanel() {
 						intro:
 							"Alle Titel und Datenquellen der Karte. Für LaTeX als .bib, für Zotero, Citavi und EndNote als .ris herunterladen.",
 						items: ALL_REFS,
-						base: "roemerlager-literatur",
+						base: "heimatschichten-literatur",
 					})
 				}
 				sx={{ px: 0, textTransform: "none" }}

@@ -68,9 +68,11 @@ export const CITATION = {
 	given: "Tobias",
 	year: 2026,
 	version: "0.1.0",
-	title: "Römerlager in Westfalen. Potenzialkarte für unentdeckte Marschlager",
-	// Startkarte: Zeile unter dem Titel und kurze Einführung
+	// Kurzname für Seitenleiste, Startkarte und Browser-Tab
+	name: "Heimatschichten",
+	// Startkarte: Zeile unter dem Namen und kurze Einführung
 	subtitle: "Historische Karten für den Kreis Minden-Lübbecke",
+	title: "Heimatschichten. Historische Karten für den Kreis Minden-Lübbecke",
 	intro:
 		"Wie sah der Kreis Minden-Lübbecke früher aus? Die Karte legt historische Karten von 1650 bis 1945 über das heutige Luftbild. Beim Start zeigt sie die Preußische Uraufnahme um 1840, dazu Gewässer, Moore, Wald und Wege aus dieser Zeit.",
 	url: pick(

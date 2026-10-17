@@ -12,7 +12,7 @@ const accessed = (date) => ({
 /** Die Anwendung als Ganzes, CSL-JSON wie in src/data/literatur.json. */
 export function projectCsl(date = new Date()) {
 	return {
-		id: `${CITATION.family.toLowerCase().replace("ä", "ae")}${CITATION.year}roemerlager`,
+		id: `${CITATION.family.toLowerCase().replace("ä", "ae")}${CITATION.year}${CITATION.name.toLowerCase()}`,
 		type: "software",
 		author,
 		issued: { "date-parts": [[CITATION.year]] },

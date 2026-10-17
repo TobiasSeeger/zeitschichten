@@ -11,7 +11,7 @@ export default function CitationBox() {
 		<Box sx={{ mt: 1 }}>
 			<CitationSummary
 				items={items}
-				base="roemerlager-westfalen"
+				base="heimatschichten"
 				title="Karte und Modell zitieren"
 			/>
 			<Typography variant="caption" color="text.secondary" component="p">

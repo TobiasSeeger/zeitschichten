@@ -16,6 +16,7 @@ import {
 } from "@mui/material"
 import dynamic from "next/dynamic"
 import { useCallback, useRef } from "react"
+import { CITATION } from "@/config"
 import { prefetchView } from "@/lib/prefetch"
 import { centerOffset, DESKTOP_QUERY } from "@/lib/sheet"
 import { useMapStore } from "@/store/use-map-store"
@@ -171,7 +172,7 @@ export default function AppShell() {
 						>
 							<Box sx={{ flex: 1 }}>
 								<Typography variant="h6" sx={{ lineHeight: 1.2 }}>
-									Römerlager in Westfalen
+									{CITATION.name}
 								</Typography>
 								<Typography variant="caption" color="text.secondary">
 									Karten und Quellen

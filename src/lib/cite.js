@@ -244,7 +244,7 @@ export async function formatCitations(items, formatId) {
 	return { html, text: htmlToText(html) }
 }
 
-/** Dateiname für den Download, z. B. roemerlager-literatur.bib */
+/** Dateiname für den Download, z. B. heimatschichten-literatur.bib */
 export function fileName(base, formatId) {
 	const format = FORMAT_BY_ID[formatId]
 	return `${base}.${format.ext ?? "txt"}`

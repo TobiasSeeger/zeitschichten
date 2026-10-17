@@ -28,7 +28,7 @@ import {
 } from "@/lib/cite"
 
 // Gewähltes Format bleibt im Browser, Standard ist der DAI-Stil
-const FORMAT_KEY = "roemerlager:zitierformat"
+const FORMAT_KEY = "heimatschichten:zitierformat"
 function loadFormat() {
 	try {
 		const f = localStorage.getItem(FORMAT_KEY)

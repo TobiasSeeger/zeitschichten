@@ -4,7 +4,7 @@
  * Straßen holen ihre Geometrie beim Wählen wieder aus dem Suchindex.
  */
 
-const KEY = "roemerlager:suchverlauf"
+const KEY = "heimatschichten:suchverlauf"
 const MAX = 8
 
 // Große oder abgeleitete Felder bleiben draußen, die Ausdehnung bleibt,
