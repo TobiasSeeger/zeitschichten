@@ -2,7 +2,11 @@ import { describe, expect, test } from "bun:test"
 import quellen from "@/data/quellen.json"
 import { hasLayerSources, LAYER_SOURCE_IDS, layerCsl } from "./layer-sources"
 import { OVERLAYS } from "./layers"
-import { ALL_REFS, getRef, REFS, resolveSource, shortLabel } from "./literature"
+import { ALL_REFS, REFS, resolveSource, shortLabel } from "./literature"
+import testRefs from "./test-refs.json"
+
+// Feste Titel für die Kurzangaben, unabhängig von den Kartendaten
+const testRef = (id) => testRefs.find((r) => r.id === id)
 
 const allSources = quellen.flatMap((g) => g.items)
 
@@ -34,17 +38,17 @@ describe("literatur.json", () => {
 
 describe("shortLabel", () => {
 	test("Jahrbuch mit abweichendem Erscheinungsjahr", () => {
-		expect(shortLabel(getRef("tremmel2011a"))).toBe(
+		expect(shortLabel(testRef("tremmel2011a"))).toBe(
 			"Tremmel 2011: Augusteische Marschlager in Porta Westfalica-Barkhausen „Auf der Lake“. Archäologie in Westfalen-Lippe 2010 (2011), S. 79–81",
 		)
 	})
 	test("Reihe mit Auflage", () => {
-		expect(shortLabel(getRef("rudnick2014"))).toBe(
+		expect(shortLabel(testRef("rudnick2014"))).toBe(
 			"Rudnick 2014: Kneblinghausen, Stadt Rüthen, Kreis Soest. Römerlager in Westfalen 1, 2. Aufl.",
 		)
 	})
 	test("Zeitungsartikel mit Datum", () => {
-		expect(shortLabel(getRef("besserer2023a"))).toBe(
+		expect(shortLabel(testRef("besserer2023a"))).toBe(
 			"Dieter Besserer, Westfalen-Blatt, 08.12.2023: Varus trifft Preußisch Oldendorf",
 		)
 	})

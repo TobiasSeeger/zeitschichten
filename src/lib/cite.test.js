@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { projectCsl } from "./citation"
 import { formatCitations, setStyleLoader } from "./cite"
 import { getRef } from "./literature"
+import testRefs from "./test-refs.json"
 
 beforeAll(() => {
 	setStyleLoader(async (name) =>
@@ -14,7 +15,8 @@ beforeAll(() => {
 	)
 })
 
-const sample = ["tremmel2011a", "rudnick2014", "lwl2023paderborn"].map(getRef)
+// Feste Titel, damit die Formatprüfung nicht an den Kartendaten hängt
+const sample = testRefs.slice(0, 3)
 
 describe("formatCitations", () => {
 	test("BibTeX nutzt die eigenen Schlüssel", async () => {
@@ -25,11 +27,8 @@ describe("formatCitations", () => {
 	})
 
 	test("Schlüssel mit Bindestrich werden zu Unterstrichen", async () => {
-		const { text } = await formatCitations(
-			[getRef("geobasis-dgm1-wcs")],
-			"bibtex",
-		)
-		expect(text).toContain("@misc{geobasis_dgm1_wcs,")
+		const { text } = await formatCitations([getRef("geobasis-dgm1")], "bibtex")
+		expect(text).toContain("@misc{geobasis_dgm1,")
 	})
 
 	test("BibLaTeX ohne doppelten Abrufhinweis", async () => {

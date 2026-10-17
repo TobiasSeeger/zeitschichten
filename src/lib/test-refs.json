@@ -1,0 +1,78 @@
+[
+	{
+		"id": "tremmel2011a",
+		"type": "article-journal",
+		"author": [
+			{
+				"family": "Tremmel",
+				"given": "Bettina"
+			}
+		],
+		"issued": {
+			"date-parts": [[2011]]
+		},
+		"title": "Augusteische Marschlager in Porta Westfalica-Barkhausen „Auf der Lake“",
+		"container-title": "Archäologie in Westfalen-Lippe",
+		"volume": "2010",
+		"page": "79-81",
+		"DOI": "10.11588/aiw.0.0.25926"
+	},
+	{
+		"id": "rudnick2014",
+		"type": "book",
+		"author": [
+			{
+				"family": "Rudnick",
+				"given": "Bernhard"
+			}
+		],
+		"issued": {
+			"date-parts": [[2014]]
+		},
+		"title": "Kneblinghausen, Stadt Rüthen, Kreis Soest",
+		"collection-title": "Römerlager in Westfalen",
+		"collection-number": "1",
+		"edition": "2",
+		"publisher": "Altertumskommission für Westfalen",
+		"publisher-place": "Münster",
+		"URL": "https://www.altertumskommission.lwl.org/media/filer_public/f1/1a/f11a8f4c-7152-44fd-8989-20395113ad02/rw_1_2014.pdf"
+	},
+	{
+		"id": "lwl2023paderborn",
+		"type": "webpage",
+		"author": [
+			{
+				"literal": "Landschaftsverband Westfalen-Lippe"
+			}
+		],
+		"issued": {
+			"date-parts": [[2023, 6, 23]]
+		},
+		"title": "Ein augusteisches Marschlager in Paderborn?",
+		"container-title": "LWL-Pressemitteilungen",
+		"genre": "Pressemitteilung",
+		"URL": "https://www.lwl.org/pressemitteilungen/nr_mitteilung.php?urlID=57212",
+		"accessed": {
+			"date-parts": [[2026, 10, 6]]
+		}
+	},
+	{
+		"id": "besserer2023a",
+		"type": "article-newspaper",
+		"author": [
+			{
+				"family": "Besserer",
+				"given": "Dieter"
+			}
+		],
+		"issued": {
+			"date-parts": [[2023, 12, 8]]
+		},
+		"title": "Varus trifft Preußisch Oldendorf",
+		"container-title": "Westfalen-Blatt",
+		"URL": "https://www.westfalen-blatt.de/owl/kreis-minden-luebbecke/pr-oldendorf/varus-schlacht-wiehengebirge-forschungen-2879038",
+		"accessed": {
+			"date-parts": [[2026, 10, 6]]
+		}
+	}
+]
