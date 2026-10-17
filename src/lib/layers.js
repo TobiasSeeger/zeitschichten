@@ -161,7 +161,6 @@ export const OVERLAYS = [
 		layers: "nw_dgm-schummerung_col",
 		attribution: GEOBASIS_NRW,
 		opacity: 0.5,
-		visible: true,
 		main: true,
 	},
 	{
@@ -187,6 +186,8 @@ export const OVERLAYS = [
 	},
 	{
 		id: "alte-flusslaeufe",
+		visible: true,
+		main: true,
 		kind: "oldrivers",
 		group: "Gewässer",
 		label: "Alte Flussläufe",
@@ -196,6 +197,7 @@ export const OVERLAYS = [
 	},
 	{
 		id: "uraufnahme",
+		visible: true,
 		bounds: NRW,
 		jump: [8.62, 52.3, 14],
 		group: HISTORIC_GROUP,
@@ -390,6 +392,7 @@ export const OVERLAYS = [
 	// Über den Karten: Flüsse und Bäche, von den Kreiskarten nachgezeichnet
 	{
 		id: TIME_WATER_LAYER,
+		visible: true,
 		kind: "timewater",
 		group: HISTORIC_GROUP,
 		label: "Flüsse und Bäche der Kreiskarten 1843/44",
@@ -399,6 +402,7 @@ export const OVERLAYS = [
 	},
 	{
 		id: MOOR_LAYER,
+		visible: true,
 		kind: "timemoor",
 		group: HISTORIC_GROUP,
 		label: "Moore und nasse Flächen um 1840",
@@ -408,6 +412,7 @@ export const OVERLAYS = [
 	},
 	{
 		id: WALD_LAYER,
+		visible: true,
 		kind: "timewald",
 		group: HISTORIC_GROUP,
 		label: "Wald um 1840",
@@ -417,6 +422,7 @@ export const OVERLAYS = [
 	},
 	{
 		id: WEGE_LAYER,
+		visible: true,
 		kind: "timewege",
 		group: HISTORIC_GROUP,
 		label: "Hauptwege um 1840",
