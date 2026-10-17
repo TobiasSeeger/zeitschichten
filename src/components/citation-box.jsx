@@ -12,12 +12,13 @@ export default function CitationBox() {
 			<CitationSummary
 				items={items}
 				base="heimatschichten"
-				title="Karte und Modell zitieren"
+				title="Karte zitieren"
 			/>
 			<Typography variant="caption" color="text.secondary" component="p">
-				Code, Modell und Texte sind unter Anleitung von {CITATION.author} mit KI
-				(Claude, Anthropic) entstanden und nicht durchgehend fachlich geprüft.
-				Quelltext, Daten und Hinweise zur Entstehung:{" "}
+				Code und Texte sind unter Anleitung von Tim Krämer (Original) und{" "}
+				{CITATION.author} mit KI (Claude, Anthropic) entstanden und nicht
+				durchgehend fachlich geprüft. Quelltext, Daten und Hinweise zur
+				Entstehung:{" "}
 				<Link href={CITATION.repository} target="_blank" rel="noopener">
 					GitHub
 				</Link>
