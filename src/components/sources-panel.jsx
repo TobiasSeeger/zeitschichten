@@ -1,78 +1,21 @@
 "use client"
 
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote"
-import {
-	Box,
-	Button,
-	IconButton,
-	Link,
-	List,
-	ListItemButton,
-	ListItemText,
-	Typography,
-} from "@mui/material"
+import { Box, Button, IconButton, Link, Typography } from "@mui/material"
+import { CITATION } from "@/config"
 import sources from "@/data/quellen.json"
 import { ALL_REFS, resolveSource } from "@/lib/literature"
-import { SITE_TYPES, SITES } from "@/lib/sites"
-import { useMapStore } from "@/store/use-map-store"
 import CitationBox from "./citation-box"
 import { openCite } from "./cite-dialog"
 import { SectionTitle } from "./layer-panel"
 
-export function SitesPanel() {
-	const setSelectedSite = useMapStore((s) => s.setSelectedSite)
-	const siteTypes = useMapStore((s) => s.siteTypes)
-
-	return (
-		<Box>
-			{SITE_TYPES.filter((t) => siteTypes[t.id]).map((type) => {
-				const items = SITES.features
-					.filter((f) => f.properties.type === type.id)
-					.sort((a, b) =>
-						a.properties.name.localeCompare(b.properties.name, "de"),
-					)
-				if (!items.length) return null
-				return (
-					<Box key={type.id}>
-						<SectionTitle>
-							{type.label} ({items.length})
-						</SectionTitle>
-						<List dense disablePadding>
-							{items.map((f) => (
-								<ListItemButton
-									key={f.properties.id}
-									onClick={() => setSelectedSite(f.properties.id)}
-									sx={{
-										borderRadius: 1,
-										borderLeft: `3px solid ${type.color}`,
-										mb: 0.25,
-									}}
-								>
-									<ListItemText
-										primary={f.properties.name}
-										secondary={[
-											f.properties.dating,
-											f.properties.size_ha && `${f.properties.size_ha} ha`,
-										]
-											.filter(Boolean)
-											.join(" · ")}
-									/>
-								</ListItemButton>
-							))}
-						</List>
-					</Box>
-				)
-			})}
-		</Box>
-	)
-}
-
-export function SourcesPanel() {
+export default function SourcesPanel() {
 	return (
 		<Box>
 			<SectionTitle>Zitiervorschlag</SectionTitle>
 			<Typography variant="body2" color="text.secondary">
-				Karte, Modell und Zusammenstellung der Quellen von Tim Krämer, 2026.
+				Karte und Zusammenstellung der Quellen von {CITATION.author},{" "}
+				{CITATION.year}.
 			</Typography>
 			<CitationBox />
 			<SectionTitle>Literatur und Daten</SectionTitle>

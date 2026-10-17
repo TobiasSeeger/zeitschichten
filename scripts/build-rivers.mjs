@@ -34,8 +34,10 @@ import { fileURLToPath } from "node:url"
 import { VectorTile } from "@mapbox/vector-tile"
 import jpeg from "jpeg-js"
 import { PbfReader } from "pbf"
+import { TILES } from "../src/config.js"
 import { lonLatToPixel, metersPerPixel, pixelToLonLat } from "../src/lib/geo.js"
-import { VECTOR_TILES } from "../src/lib/water.js"
+
+const VECTOR_TILES = TILES.vector
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
 const CACHE = join(ROOT, "node_modules/.cache/uraufnahme")

@@ -1,16 +1,10 @@
 import { describe, expect, test } from "bun:test"
-import fundstellen from "@/data/fundstellen.json"
 import quellen from "@/data/quellen.json"
-import { CRITERIA_SOURCES } from "./criteria"
 import { hasLayerSources, LAYER_SOURCE_IDS, layerCsl } from "./layer-sources"
 import { OVERLAYS } from "./layers"
 import { ALL_REFS, getRef, REFS, resolveSource, shortLabel } from "./literature"
 
-const allSources = [
-	...quellen.flatMap((g) => g.items),
-	...fundstellen.features.flatMap((f) => f.properties.sources ?? []),
-	...Object.values(CRITERIA_SOURCES).flat(),
-]
+const allSources = quellen.flatMap((g) => g.items)
 
 describe("literatur.json", () => {
 	test("Schlüssel sind eindeutig und BibTeX-tauglich", () => {
@@ -59,18 +53,8 @@ describe("shortLabel", () => {
 describe("Ebenen", () => {
 	test("jede zuschaltbare Ebene hat Quellen", () => {
 		for (const o of OVERLAYS) expect(hasLayerSources(o.id)).toBe(true)
-		// Schalter unter „Analyse und Wege“ in layer-panel.jsx
-		for (const id of [
-			"heatmap",
-			"candidates",
-			"boundary",
-			"rings",
-			"routes",
-			"stops",
-			"roads",
-			"waterways",
-		])
-			expect(hasLayerSources(id)).toBe(true)
+		// Kreisgrenze, Schalter unter „Hilfslinien“ in layer-panel.jsx
+		expect(hasLayerSources("boundary")).toBe(true)
 	})
 	test("eigene Ebenen stehen vorn, alle Verweise lösen auf", () => {
 		for (const id of LAYER_SOURCE_IDS) {
@@ -78,9 +62,7 @@ describe("Ebenen", () => {
 			expect(items.length).toBeGreaterThan(0)
 			expect(new Set(items.map((i) => i.id)).size).toBe(items.length)
 		}
-		expect(layerCsl("heatmap")[0].title).toBe(
-			"Potenzialkarte für unentdeckte Marschlager",
-		)
+		expect(layerCsl("alte-flusslaeufe")[0].title).toBe("Alte Flussläufe")
 	})
 })
 

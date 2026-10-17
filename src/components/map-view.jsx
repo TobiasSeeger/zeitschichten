@@ -5,16 +5,11 @@ import { Box, CircularProgress } from "@mui/material"
 import * as maplibregl from "maplibre-gl"
 import { useEffect, useRef, useState } from "react"
 import { assetUrl, BASE_PATH } from "@/config"
-import roads from "@/data/roemerstrassen.json"
-import { throughGates } from "@/lib/camp-gates"
 import { SHORT_CREDIT } from "@/lib/citation"
-import { circlePolygon } from "@/lib/geo"
 import {
-	ALT_BLUE,
 	BASE_LAYERS,
 	FONT,
 	GLYPHS,
-	HEUTE_BLUE,
 	MOOR_1844_FILE,
 	MOOR_FILE,
 	MOOR_LAYER,
@@ -30,14 +25,9 @@ import {
 	WEGE_LAYER,
 } from "@/lib/layers"
 import maplibreVersion from "@/lib/maplibre-version.json"
-import { rankedCandidates } from "@/lib/potential/candidates"
-import { oldRiverFeatures, withoutOldRivers } from "@/lib/potential/old-rivers"
-import { renderHeatmap } from "@/lib/potential/render"
-import { ensureLineaments, inspectAt } from "@/lib/potential/use-potential"
-import { prefetchView, setPrefetchMap } from "@/lib/prefetch"
+import { setPrefetchMap } from "@/lib/prefetch"
 import { DEFAULT_REGION, MAP_BOUNDS } from "@/lib/regions"
-import { centerOffset, isMobile, mapInsets } from "@/lib/sheet"
-import { campsFor, SITE_TYPES, SITES } from "@/lib/sites"
+import { isMobile, mapInsets } from "@/lib/sheet"
 import { useMapStore } from "@/store/use-map-store"
 
 // Startansicht aus dem URL-Hash (#zoom/lat/lon), sonst der Kreis
@@ -58,8 +48,6 @@ function initialView() {
 	}
 }
 const EMPTY = { type: "FeatureCollection", features: [] }
-const EMPTY_IMAGE =
-	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 const HALO = {
 	"text-halo-color": "rgba(255,255,255,0.92)",
 	"text-halo-width": 1.6,
@@ -75,71 +63,17 @@ function buildStyle() {
 	return style
 }
 
-const typeColor = [
-	"match",
-	["get", "type"],
-	...SITE_TYPES.flatMap((t) => [t.id, t.color]),
-	"#444",
-]
+// Leere Ebene, unter der eigene Karten liegen: über den Ebenen aus dem
+// Style, unter Kreisgrenze und Suchtreffer
+const CUSTOM_ANCHOR = "eigene-karten-anker"
 
-function addAnalysisLayers(map) {
-	map.addSource("heatmap", {
-		type: "image",
-		url: EMPTY_IMAGE,
-		coordinates: [
-			[0, 1],
-			[1, 1],
-			[1, 0],
-			[0, 0],
-		],
-	})
+/** Kreisgrenze als Orientierung und Anker für eigene Karten. */
+function addRegionLayers(map) {
 	map.addLayer({
-		id: "heatmap",
-		type: "raster",
-		source: "heatmap",
-		paint: { "raster-resampling": "nearest", "raster-fade-duration": 0 },
+		id: CUSTOM_ANCHOR,
+		type: "background",
+		layout: { visibility: "none" },
 	})
-
-	// Natürliche Flussläufe mit heller Kontur, gut sichtbar auf dem Luftbild
-	const riverWidth = (river, stream) => [
-		"interpolate",
-		["linear"],
-		["zoom"],
-		7,
-		["match", ["get", "kind"], "river", river[0], stream[0]],
-		13,
-		["match", ["get", "kind"], "river", river[1], stream[1]],
-	]
-	map.addSource("waterways", { type: "geojson", data: EMPTY })
-	map.addLayer({
-		id: "waterways-casing",
-		type: "line",
-		source: "waterways",
-		layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
-		paint: {
-			"line-color": "#fff",
-			"line-opacity": 0.8,
-			"line-width": riverWidth([4, 8], [1.5, 3.5]),
-		},
-	})
-	map.addLayer({
-		id: "waterways",
-		type: "line",
-		source: "waterways",
-		layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
-		paint: {
-			// dunkel der alte, belegte Lauf, hell der heutige
-			"line-color": [
-				"match",
-				["get", "herkunft"],
-				"heute",
-				HEUTE_BLUE,
-				ALT_BLUE,
-			],
-			"line-width": riverWidth([2.5, 5.5], [0.8, 2]),
-		},
-	})
-
 	map.addSource("region", { type: "geojson", data: DEFAULT_REGION.outline })
 	map.addLayer({
 		id: "region-casing",
@@ -156,216 +90,6 @@ function addAnalysisLayers(map) {
 			"line-width": 1.6,
 			"line-dasharray": [4, 2],
 		},
-	})
-
-	// Belegte und vermutete Römerstraßen
-	map.addSource("roads", { type: "geojson", data: roads })
-	map.addLayer({
-		id: "roads",
-		type: "line",
-		source: "roads",
-		layout: { "line-cap": "round" },
-		paint: {
-			"line-color": "#5d4037",
-			"line-width": 3,
-			"line-dasharray": [
-				"match",
-				["get", "certainty"],
-				"belegt",
-				["literal", [1, 0]],
-				"vermutet",
-				["literal", [2, 1.5]],
-				["literal", [0.6, 1.6]],
-			],
-		},
-	})
-
-	map.addSource("rings", { type: "geojson", data: EMPTY })
-	map.addLayer({
-		id: "rings",
-		type: "line",
-		source: "rings",
-		paint: {
-			"line-color": "#6a1b9a",
-			"line-width": ["match", ["get", "kind"], "mean", 2, 1],
-			"line-dasharray": [3, 2],
-			"line-opacity": ["match", ["get", "kind"], "mean", 0.9, 0.35],
-		},
-	})
-	map.addLayer({
-		id: "rings-label",
-		type: "symbol",
-		source: "rings",
-		filter: ["==", ["get", "kind"], "mean"],
-		layout: {
-			"symbol-placement": "line",
-			"symbol-spacing": 400,
-			"text-field": ["get", "label"],
-			"text-font": FONT,
-			"text-size": 11,
-		},
-		paint: { "text-color": "#4a148c", ...HALO },
-	})
-
-	// Mögliche Marschrouten (Least-Cost-Path)
-	map.addSource("routes", { type: "geojson", data: EMPTY })
-	map.addLayer({
-		id: "routes-casing",
-		type: "line",
-		source: "routes",
-		layout: { "line-cap": "round", "line-join": "round" },
-		paint: { "line-color": "#3e2723", "line-width": 6, "line-opacity": 0.55 },
-	})
-	map.addLayer({
-		id: "routes",
-		type: "line",
-		source: "routes",
-		layout: { "line-cap": "round", "line-join": "round" },
-		paint: {
-			// Fußwege gelb, Schiffsstrecken auf der Lippe hellblau gestrichelt,
-			// Wege zu Zielen ohne gesichertes Lager gelb gestrichelt
-			"line-color": ["match", ["get", "mode"], "Schiff", "#4fc3f7", "#ffca28"],
-			"line-width": 3,
-			"line-dasharray": [
-				"case",
-				["==", ["get", "mode"], "Schiff"],
-				["literal", [2, 1.2]],
-				["to-boolean", ["get", "target"]],
-				["literal", [2.5, 1.5]],
-				["literal", [1, 0]],
-			],
-		},
-	})
-	map.addLayer({
-		id: "routes-label",
-		type: "symbol",
-		source: "routes",
-		layout: {
-			"symbol-placement": "line",
-			"symbol-spacing": 500,
-			"text-field": [
-				"case",
-				["==", ["get", "mode"], "Schiff"],
-				["concat", "Schiff · ", ["to-string", ["get", "km"]], " km"],
-				[
-					"concat",
-					["to-string", ["get", "km"]],
-					" km · ",
-					["to-string", ["get", "days"]],
-					" Tagesmärsche",
-				],
-			],
-			"text-font": FONT,
-			"text-size": 11,
-		},
-		paint: { "text-color": "#3e2723", ...HALO },
-	})
-
-	// Etappenpunkte auf den Routen, verbunden mit dem besten Potenzial
-	map.addSource("stages", { type: "geojson", data: EMPTY })
-	map.addLayer({
-		id: "stages",
-		type: "circle",
-		source: "stages",
-		paint: {
-			"circle-radius": 10,
-			"circle-color": "#ffca28",
-			"circle-stroke-color": "#3e2723",
-			"circle-stroke-width": 2,
-		},
-	})
-	map.addLayer({
-		id: "stages-label",
-		type: "symbol",
-		source: "stages",
-		layout: {
-			"text-field": "E",
-			"text-font": FONT,
-			"text-size": 11,
-			"text-allow-overlap": true,
-		},
-		paint: { "text-color": "#3e2723" },
-	})
-
-	// Erkannte gerade Strukturen im Laserscan (experimentell)
-	map.addSource("lines", { type: "geojson", data: EMPTY })
-	map.addLayer({
-		id: "lines",
-		type: "line",
-		source: "lines",
-		layout: { visibility: "none", "line-cap": "round" },
-		paint: {
-			"line-color": ["case", ["get", "corner"], "#ff1744", "#ffea00"],
-			"line-width": ["case", ["get", "corner"], 3, 2],
-		},
-	})
-
-	map.addSource("candidates", { type: "geojson", data: EMPTY })
-	// Hof um den Ort, über dem in der Liste die Maus steht
-	map.addLayer({
-		id: "candidates-hover",
-		type: "circle",
-		source: "candidates",
-		filter: ["==", ["get", "rank"], -1],
-		paint: {
-			"circle-radius": 22,
-			"circle-color": "#d84315",
-			"circle-opacity": 0.25,
-			"circle-stroke-color": "#d84315",
-			"circle-stroke-width": 2,
-			"circle-stroke-opacity": 0.8,
-		},
-	})
-	map.addLayer({
-		id: "candidates",
-		type: "circle",
-		source: "candidates",
-		paint: {
-			"circle-radius": ["case", ["get", "inRegion"], 11, 5],
-			"circle-color": "#fff",
-			"circle-stroke-color": "#d84315",
-			"circle-stroke-width": ["case", ["get", "inRegion"], 2.5, 2],
-		},
-	})
-	map.addLayer({
-		id: "candidates-label",
-		type: "symbol",
-		source: "candidates",
-		layout: {
-			"text-field": ["to-string", ["get", "rank"]],
-			"text-font": FONT,
-			"text-size": 11,
-			"text-allow-overlap": true,
-		},
-		paint: { "text-color": "#d84315" },
-	})
-
-	map.addSource("sites", { type: "geojson", data: SITES })
-	map.addLayer({
-		id: "sites",
-		type: "circle",
-		source: "sites",
-		paint: {
-			"circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 5, 12, 9],
-			"circle-color": typeColor,
-			"circle-stroke-color": "#fff",
-			"circle-stroke-width": 2,
-		},
-	})
-	map.addLayer({
-		id: "sites-label",
-		type: "symbol",
-		source: "sites",
-		minzoom: 8,
-		layout: {
-			"text-field": ["get", "name"],
-			"text-font": FONT,
-			"text-size": 12,
-			"text-offset": [0, 1.1],
-			"text-anchor": "top",
-			"text-optional": true,
-		},
-		paint: { "text-color": "#212121", ...HALO },
 	})
 }
 
@@ -422,7 +146,7 @@ function addSearchLayers(map) {
 	})
 }
 
-/** Eigene Karte als Quelle und Layer, unter der Potenzialkarte. */
+/** Eigene Karte als Quelle und Layer, unter Kreisgrenze und Suchtreffer. */
 function addCustomLayer(map, id, l) {
 	if (l.kind === "raster") {
 		map.addSource(id, {
@@ -432,12 +156,12 @@ function addCustomLayer(map, id, l) {
 			maxzoom: l.maxzoom ?? 19,
 			attribution: l.attribution ?? l.name,
 		})
-		map.addLayer({ id, type: "raster", source: id }, "heatmap")
+		map.addLayer({ id, type: "raster", source: id }, CUSTOM_ANCHOR)
 	} else if (l.kind === "image") {
 		map.addSource(id, { type: "image", url: l.url, coordinates: l.corners })
 		map.addLayer(
 			{ id, type: "raster", source: id, paint: { "raster-fade-duration": 0 } },
-			"heatmap",
+			CUSTOM_ANCHOR,
 		)
 	} else if (l.kind === "vector") {
 		map.addSource(id, { type: "geojson", data: l.data })
@@ -473,9 +197,6 @@ function addCustomLayer(map, id, l) {
 
 // React StrictMode entfernt die erste Karte, bevor der State nachzieht
 const alive = (map) => map && !map._removed
-
-// Ab dieser Zoomstufe holt die Karte die Laserscan-Bilder im Ausschnitt
-const LRM_MIN_ZOOM = 11
 
 // Quellen und kleinste Zoomstufe je Ebene, für die Ladeanzeige
 const OVERLAY_SOURCES = Object.fromEntries(
@@ -513,114 +234,6 @@ function overlayStatus(map, overlays) {
 	return status
 }
 
-function ringFeatures(ringSource, mean, sigma) {
-	const label = `1 Tagesmarsch (${Math.round(mean / 1000)} km)`
-	const features = []
-	for (const camp of campsFor(ringSource)) {
-		for (const [kind, radius] of [
-			["inner", mean - sigma],
-			["mean", mean],
-			["outer", mean + sigma],
-		]) {
-			features.push({
-				type: "Feature",
-				properties: { kind, camp: camp.id, label },
-				geometry: {
-					type: "LineString",
-					coordinates: circlePolygon(camp.lon, camp.lat, radius),
-				},
-			})
-		}
-	}
-	return { type: "FeatureCollection", features }
-}
-
-// Auf der Karte nur die besten Kandidaten, die Liste zeigt alle
-const MAP_CANDIDATES = 12
-
-const CLICKABLE = ["sites", "candidates", "stages", "routes", "roads"]
-
-function handleClick(map, e) {
-	pickAt(map, e)
-	// Auf dem Handy geht für die Infokarte das Sheet auf. Liegt der getippte
-	// Punkt dann darunter, rückt die Karte ihn in den freien Teil.
-	if (!isMobile() || !useMapStore.getState().inspect) return
-	const { top, bottom } = mapInsets()
-	const h = map.getContainer().clientHeight
-	if (e.point.y > h - bottom - 24 || e.point.y < top) {
-		map.easeTo({ center: e.lngLat, offset: centerOffset() })
-	}
-}
-
-function pickAt(map, e) {
-	const store = useMapStore.getState()
-	const hits = map.queryRenderedFeatures(e.point, { layers: CLICKABLE })
-	const pick = (id) => hits.find((f) => f.layer.id === id)
-	const site = pick("sites")
-	if (site) {
-		store.setSelectedSite(site.properties.id)
-		return
-	}
-	store.setSelectedSite(null)
-	const candidate = pick("candidates")
-	if (candidate) {
-		const [lon, lat] = candidate.geometry.coordinates
-		store.setInspect(
-			inspectAt(lon, lat, {
-				kind: "candidate",
-				rank: candidate.properties.rank,
-			}),
-		)
-		return
-	}
-	const stage = pick("stages")
-	if (stage) {
-		const [lon, lat] = stage.geometry.coordinates
-		const extra = { kind: "stage", stage: { ...stage.properties } }
-		store.setInspect(
-			inspectAt(lon, lat, extra) ?? { ...extra, lon, lat, outside: true },
-		)
-		return
-	}
-	const road = pick("roads")
-	if (road && !pick("routes")) {
-		const p = road.properties
-		const label = {
-			belegt: "belegt",
-			vermutet: "vermutet",
-			hypothetisch: "Hypothese",
-		}
-		const box = document.createElement("div")
-		box.style.font = "14px / 1.4 var(--font-sans), system-ui, sans-serif"
-		const title = document.createElement("b")
-		title.textContent = p.name
-		const meta = document.createElement("div")
-		meta.textContent = `Verlauf ${label[p.certainty] ?? p.certainty}`
-		const link = document.createElement("a")
-		link.href = p.url
-		link.target = "_blank"
-		link.rel = "noreferrer"
-		link.textContent = p.source
-		box.append(title, meta, link)
-		new maplibregl.Popup({ maxWidth: "280px" })
-			.setLngLat(e.lngLat)
-			.setDOMContent(box)
-			.addTo(map)
-		return
-	}
-	const route = pick("routes")
-	if (route) {
-		const { lng, lat } = e.lngLat
-		const extra = { kind: "route", route: { ...route.properties } }
-		store.setInspect(
-			inspectAt(lng, lat, extra) ?? { ...extra, lon: lng, lat, outside: true },
-		)
-		return
-	}
-	const { lng, lat } = e.lngLat
-	store.setInspect(inspectAt(lng, lat, { kind: "cell" }))
-}
-
 export default function MapView({ onMapReady }) {
 	const container = useRef(null)
 	// Erst nach "load" gesetzt, alle Effekte hängen daran
@@ -630,26 +243,7 @@ export default function MapView({ onMapReady }) {
 
 	const baseLayer = useMapStore((s) => s.baseLayer)
 	const overlays = useMapStore((s) => s.overlays)
-	const siteTypes = useMapStore((s) => s.siteTypes)
-	const showRings = useMapStore((s) => s.showRings)
-	const showWaterways = useMapStore((s) => s.showWaterways)
-	const showRoutes = useMapStore((s) => s.showRoutes)
-	const showRoads = useMapStore((s) => s.showRoads)
-	const showCandidates = useMapStore((s) => s.showCandidates)
-	const hoveredCandidate = useMapStore((s) => s.hoveredCandidate)
-	const showStages = useMapStore((s) => s.showStages)
 	const showRegion = useMapStore((s) => s.showRegion)
-	const ringSource = useMapStore((s) => s.ringSource)
-	const ringMean = useMapStore((s) => s.params.ringMean)
-	const ringSigma = useMapStore((s) => s.params.ringSigma)
-	const heatmap = useMapStore((s) => s.heatmap)
-	const result = useMapStore((s) => s.result)
-	const derivedWaterways = useMapStore((s) => s.derivedWaterways)
-	const network = useMapStore((s) => s.network)
-	const localRoutes = useMapStore((s) => s.routes)
-	// Das Netz hat Vorrang, eigene Routen gibt es nur ohne Netz
-	const routes = network?.routes ?? localRoutes
-	const selectedSite = useMapStore((s) => s.selectedSite)
 	const searchHit = useMapStore((s) => s.searchHit)
 
 	useEffect(() => {
@@ -685,21 +279,12 @@ export default function MapView({ onMapReady }) {
 					.querySelector(".maplibregl-compact-show")
 					?.classList.remove("maplibregl-compact-show")
 			}
-			addAnalysisLayers(map)
+			addRegionLayers(map)
 			addSearchLayers(map)
 			setPrefetchMap(map)
 			setMap(map)
 			onMapReady?.(map)
 		})
-		map.on("click", (e) => handleClick(map, e))
-		for (const id of CLICKABLE) {
-			map.on("mouseenter", id, () => {
-				map.getCanvas().style.cursor = "pointer"
-			})
-			map.on("mouseleave", id, () => {
-				map.getCanvas().style.cursor = ""
-			})
-		}
 		return () => {
 			setMap(null)
 			map.remove()
@@ -841,242 +426,12 @@ export default function MapView({ onMapReady }) {
 		}
 	}, [customLayers, map])
 
-	// Laserscan-Fenster: 36 Bilder, zusammen 15 MB. Ein Bild wird erst
-	// geholt, wenn die Ebene an ist, sein Fenster im Ausschnitt liegt und
-	// die Karte nah genug ist, darunter wären die 2,4 km nur ein Fleck.
-	const lineaments = useMapStore((s) => s.lineaments)
-	const lrm = overlays.lrm
-	const lines = overlays.lines
-	useEffect(() => {
-		if (lrm.visible || lines.visible) ensureLineaments()
-	}, [lrm.visible, lines.visible])
-	useEffect(() => {
-		if (!alive(map) || !lineaments || !lrm.visible) return
-		const windows = lineaments.windows.filter((w) => w.imageCorners)
-		const addInView = () => {
-			if (!alive(map) || map.getZoom() < LRM_MIN_ZOOM) return
-			const b = map.getBounds()
-			for (const w of windows) {
-				const id = `lrm-${w.id}`
-				if (map.getSource(id)) continue
-				const lons = w.imageCorners.map((c) => c[0])
-				const lats = w.imageCorners.map((c) => c[1])
-				if (
-					Math.max(...lons) < b.getWest() ||
-					Math.min(...lons) > b.getEast() ||
-					Math.max(...lats) < b.getSouth() ||
-					Math.min(...lats) > b.getNorth()
-				)
-					continue
-				map.addSource(id, {
-					type: "image",
-					url: assetUrl(`precomputed/lrm/${w.id}.jpg`),
-					coordinates: w.imageCorners,
-				})
-				map.addLayer(
-					{
-						id,
-						type: "raster",
-						source: id,
-						paint: {
-							"raster-fade-duration": 0,
-							"raster-opacity": useMapStore.getState().overlays.lrm.opacity,
-						},
-					},
-					"heatmap",
-				)
-			}
-		}
-		addInView()
-		map.on("moveend", addInView)
-		return () => map.off("moveend", addInView)
-	}, [lineaments, lrm.visible, map])
-	useEffect(() => {
-		if (!alive(map) || !lineaments) return
-		for (const w of lineaments.windows) {
-			const id = `lrm-${w.id}`
-			if (!map.getLayer(id)) continue
-			map.setLayoutProperty(id, "visibility", lrm.visible ? "visible" : "none")
-			map.setPaintProperty(id, "raster-opacity", lrm.opacity)
-		}
-		map.getSource("lines").setData(lineaments.segments)
-		map.setLayoutProperty(
-			"lines",
-			"visibility",
-			lines.visible ? "visible" : "none",
-		)
-		map.setPaintProperty("lines", "line-opacity", lines.opacity)
-	}, [lineaments, lrm, lines, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		const visible = Object.keys(siteTypes).filter((k) => siteTypes[k])
-		const filter = ["in", ["get", "type"], ["literal", visible]]
-		map.setFilter("sites", filter)
-		map.setFilter("sites-label", filter)
-	}, [siteTypes, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		map
-			.getSource("rings")
-			.setData(
-				showRings ? ringFeatures(ringSource, ringMean, ringSigma) : EMPTY,
-			)
-	}, [showRings, ringSource, ringMean, ringSigma, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		map.setLayoutProperty("roads", "visibility", showRoads ? "visible" : "none")
-	}, [showRoads, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		const hovered = hoveredCandidate ?? -1
-		const isHovered = ["==", ["get", "rank"], hovered]
-		// Bei ausgeschalteter Ebene erscheint nur der Ort unter der Maus
-		const filter = showCandidates ? null : isHovered
-		for (const id of ["candidates", "candidates-label", "candidates-hover"]) {
-			map.setLayoutProperty(
-				id,
-				"visibility",
-				showCandidates || hoveredCandidate != null ? "visible" : "none",
-			)
-		}
-		map.setFilter("candidates-hover", isHovered)
-		map.setFilter("candidates", filter)
-		map.setFilter("candidates-label", filter)
-		map.setPaintProperty("candidates", "circle-color", [
-			"case",
-			isHovered,
-			"#d84315",
-			"#fff",
-		])
-		map.setPaintProperty("candidates-label", "text-color", [
-			"case",
-			isHovered,
-			"#fff",
-			"#d84315",
-		])
-	}, [showCandidates, hoveredCandidate, map])
-
-	// Gewässer der Analyse: abgeleitetes Netz als Linien, OSM direkt aus den
-	// Vektorkacheln (Ebene "osm-gewaesser")
-	const waterSource = result?.waterSource
-	const oldRivers = useMapStore((s) => s.params.oldRivers)
-	useEffect(() => {
-		if (!alive(map)) return
-		const dem = waterSource !== "osm"
-		// Gezeichnete Läufe: in der Region die der Analyse (im Kreis nach den
-		// Kreiskarten, sonst heutige Flüsse), dazu die alten Läufe der großen
-		// Flüsse. Das grobe Netz aus dem Höhenmodell zeigt die Karte nicht,
-		// seine Rasterlinien lägen neben den echten Läufen.
-		const derived = dem && derivedWaterways ? derivedWaterways.features : []
-		const features = oldRivers
-			? [...withoutOldRivers(derived), ...oldRiverFeatures()]
-			: derived
-		map.getSource("waterways").setData({ type: "FeatureCollection", features })
-		// Sind Gewässer aus den Karten an, tritt das abgeleitete Netz zurück,
-		// sonst mischen sich zwei Sorten blauer Linien
-		const visible = showWaterways && !timeWaterOn
-		for (const id of ["waterways", "waterways-casing"]) {
-			map.setLayoutProperty(id, "visibility", visible ? "visible" : "none")
-		}
-		if (showWaterways && !dem) {
-			useMapStore.getState().setOverlay("osm-gewaesser", { visible: true })
-		}
-	}, [
-		derivedWaterways,
-		showWaterways,
-		waterSource,
-		oldRivers,
-		timeWaterOn,
-		map,
-	])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		map.getSource("routes").setData(routes ? throughGates(routes) : EMPTY)
-		for (const id of ["routes", "routes-casing", "routes-label"]) {
-			map.setLayoutProperty(id, "visibility", showRoutes ? "visible" : "none")
-		}
-	}, [routes, showRoutes, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		for (const id of ["stages", "stages-label"]) {
-			map.setLayoutProperty(id, "visibility", showStages ? "visible" : "none")
-		}
-	}, [showStages, map])
-
 	useEffect(() => {
 		if (!alive(map)) return
 		for (const id of ["region", "region-casing"]) {
 			map.setLayoutProperty(id, "visibility", showRegion ? "visible" : "none")
 		}
 	}, [showRegion, map])
-
-	// Bild der Potenzialkarte nur bei neuem Ergebnis oder neuer Schwelle
-	// rechnen, nicht bei jedem Schritt des Deckkraft-Reglers
-	const threshold = heatmap.threshold
-	useEffect(() => {
-		if (!alive(map) || !result) return
-		map.getSource("heatmap").updateImage({
-			url: renderHeatmap(result, threshold),
-			coordinates: result.grid.corners,
-		})
-	}, [result, threshold, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		map.setLayoutProperty(
-			"heatmap",
-			"visibility",
-			result && heatmap.visible ? "visible" : "none",
-		)
-		map.setPaintProperty("heatmap", "raster-opacity", heatmap.opacity)
-	}, [result, heatmap.visible, heatmap.opacity, map])
-
-	useEffect(() => {
-		if (!alive(map)) return
-		const cands = map.getSource("candidates")
-		const stages = map.getSource("stages")
-		if (!result) {
-			cands.setData(EMPTY)
-			stages.setData(EMPTY)
-			return
-		}
-		cands.setData({
-			type: "FeatureCollection",
-			features: rankedCandidates(result)
-				.filter((c) => !c.rank || c.rank <= MAP_CANDIDATES)
-				.map((c) => ({
-					type: "Feature",
-					properties: {
-						rank: c.rank ?? "",
-						score: c.score,
-						inRegion: c.inRegion,
-					},
-					geometry: { type: "Point", coordinates: [c.lon, c.lat] },
-				})),
-		})
-		stages.setData({
-			type: "FeatureCollection",
-			features: (network?.stages ?? result.stages ?? []).map((s) => ({
-				type: "Feature",
-				properties: {
-					from: s.from,
-					to: s.to,
-					stage: s.stage,
-					of: s.of,
-					km: Math.round(s.km * 10) / 10,
-					score: s.score,
-					offset: Math.round(s.offset),
-				},
-				geometry: { type: "Point", coordinates: [s.lon, s.lat] },
-			})),
-		})
-	}, [result, network, map])
 
 	useEffect(() => {
 		if (!alive(map)) return
@@ -1085,20 +440,6 @@ export default function MapView({ onMapReady }) {
 			: EMPTY
 		map.getSource("search-hit").setData(data)
 	}, [searchHit, map])
-
-	useEffect(() => {
-		if (!alive(map) || !selectedSite) return
-		const f = SITES.features.find((s) => s.properties.id === selectedSite)
-		if (f) {
-			const zoom = Math.max(map.getZoom(), 13)
-			prefetchView(f.geometry.coordinates, zoom)
-			map.flyTo({
-				center: f.geometry.coordinates,
-				zoom,
-				offset: centerOffset(),
-			})
-		}
-	}, [selectedSite, map])
 
 	return (
 		<>

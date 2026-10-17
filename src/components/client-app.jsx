@@ -2,12 +2,10 @@
 
 import dynamic from "next/dynamic"
 import { BASE_PATH } from "@/config"
-import { preloadStartupData } from "@/lib/preload"
 
 if (typeof window !== "undefined") {
-	// Daten und Kartenmodul gleich mit dem ersten Skript anfordern, nicht
-	// erst nacheinander, wenn App, Karte und Effekte so weit sind
-	preloadStartupData()
+	// Kartenmodul gleich mit dem ersten Skript anfordern, nicht erst, wenn
+	// App und Effekte so weit sind
 	import("./map-view")
 	// Kachel-Cache (public/sw.js), nicht im Entwicklungsserver
 	if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {

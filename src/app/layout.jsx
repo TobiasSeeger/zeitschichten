@@ -1,8 +1,7 @@
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter"
 import { Source_Sans_3 } from "next/font/google"
 import { preconnect } from "react-dom"
-import { assetUrl, TILES } from "@/config"
-import { STARTUP_FILES } from "@/lib/preload"
+import { TILES } from "@/config"
 import Providers from "./providers"
 import "./globals.css"
 
@@ -47,22 +46,11 @@ const TILE_ORIGINS = [
 	),
 ]
 
-// Potenzialkarte und Netz abrufen, sobald der Browser den Kopf liest, nicht
-// erst wenn die Skripte da sind. loadAsset (src/lib/preload.js) übernimmt
-// die Antworten. <link rel=preload> taugt dafür nicht: Steuert der Service
-// Worker die Seite, verwirft Chrome die Vorab-Antwort und lädt doppelt.
-const EARLY_FETCH = `window.__early={};${JSON.stringify(
-	STARTUP_FILES.map(([file, as]) => [file, assetUrl(file), as]),
-)}.forEach(function(e){window.__early[e[0]]=fetch(e[1],{priority:"low"}).then(function(r){return r.ok?r[e[2]]():null}).catch(function(){return null})})`
-
 export default function RootLayout({ children }) {
 	for (const origin of TILE_ORIGINS)
 		preconnect(origin, { crossOrigin: "anonymous" })
 	return (
 		<html lang="de" className={sans.variable}>
-			<head>
-				<script dangerouslySetInnerHTML={{ __html: EARLY_FETCH }} />
-			</head>
 			<body>
 				<AppRouterCacheProvider>
 					<Providers>{children}</Providers>

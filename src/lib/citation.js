@@ -2,7 +2,7 @@ import { CITATION } from "@/config"
 
 export { CITATION }
 
-export const SHORT_CREDIT = `Potenzialkarte: ${CITATION.author} ${CITATION.year}`
+export const SHORT_CREDIT = `Karte: ${CITATION.author} ${CITATION.year}`
 
 const author = [{ family: CITATION.family, given: CITATION.given }]
 const accessed = (date) => ({
@@ -24,7 +24,7 @@ export function projectCsl(date = new Date()) {
 }
 
 /**
- * Eine eigene Ebene der Anwendung (Potenzialkarte, Marschwege, entzerrte
+ * Eine eigene Ebene der Anwendung (alte Flussläufe, entzerrte
  * Altkarte …) als Teil des Gesamtwerks.
  */
 export function componentCsl(key, title, date = new Date()) {

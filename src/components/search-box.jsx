@@ -8,7 +8,6 @@ import LayersIcon from "@mui/icons-material/Layers"
 import LocationCityIcon from "@mui/icons-material/LocationCity"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
 import NorthWestIcon from "@mui/icons-material/NorthWest"
-import RouteIcon from "@mui/icons-material/Route"
 import SearchIcon from "@mui/icons-material/Search"
 import SpellcheckIcon from "@mui/icons-material/Spellcheck"
 import TerrainIcon from "@mui/icons-material/Terrain"
@@ -51,9 +50,7 @@ const INPUT_ID = "globale-suche"
 const GROUPS = {
 	coord: "Koordinate",
 	fix: "Meinten Sie?",
-	site: "Fundorte",
 	river: "Flüsse",
-	road: "Römerstraßen",
 	layer: "Ebenen",
 	source: "Quellen",
 	area: "Gebirge und Gebiete",
@@ -63,25 +60,23 @@ const GROUPS = {
 }
 
 // Arten, deren Namen das Feld beim Tippen ergänzt
-const COMPLETES = ["site", "river", "road", "layer", "area", "place"]
+const COMPLETES = ["river", "layer", "area", "place"]
 
 // Arten aus dem lokalen Index, ihre Geometrie kommt beim Wählen von dort
-const LOCAL_KINDS = ["site", "river", "road", "layer", "source"]
+const LOCAL_KINDS = ["river", "layer", "source"]
 
 const FILTERS = [
 	{ id: "all", label: "Alle" },
-	{ id: "site", label: "Fundorte", kinds: ["site"] },
 	{ id: "place", label: "Orte, Gebiete", kinds: [] },
-	{ id: "water", label: "Flüsse, Straßen", kinds: ["river", "road"] },
+	{ id: "water", label: "Flüsse", kinds: ["river"] },
 	{ id: "layer", label: "Ebenen", kinds: ["layer"] },
 	{ id: "source", label: "Quellen", kinds: ["source"] },
 ]
 
 const EXAMPLES = [
-	{ label: "Varus", secondary: "Schlachtfeld und antike Texte" },
-	{ label: "Aliso", secondary: "das gesuchte Lager an der Lippe" },
-	{ label: "Visurgis", secondary: "lateinischer Name der Weser" },
-	{ label: "Porta Westfalica", secondary: "Marschlager Barkhausen" },
+	{ label: "Lübbecke", secondary: "Orte und Gebiete aus OpenStreetMap" },
+	{ label: "Uraufnahme", secondary: "historische Karte als Ebene" },
+	{ label: "Weser", secondary: "Flusslauf auf der Karte" },
 	{ label: "52.2512, 8.9116", secondary: "Koordinaten, auch UTM 32" },
 ].map((e) => ({ ...e, kind: "query", key: `query:${e.label}` }))
 
@@ -89,24 +84,8 @@ function KindIcon({ option }) {
 	const sx = { fontSize: 20, color: "text.secondary" }
 	if (option.history) return <HistoryIcon sx={sx} />
 	switch (option.kind) {
-		case "site":
-			return (
-				<Box
-					sx={{
-						width: 14,
-						height: 14,
-						m: "3px",
-						borderRadius: "50%",
-						bgcolor: option.color,
-						border: "2px solid #fff",
-						boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
-					}}
-				/>
-			)
 		case "river":
 			return <WavesIcon sx={{ ...sx, color: "#1565c0" }} />
-		case "road":
-			return <RouteIcon sx={sx} />
 		case "layer":
 			return <LayersIcon sx={sx} />
 		case "source":
@@ -282,20 +261,17 @@ export default function SearchBox({ getMap, desktop }) {
 		const fix = correction(query, [...local, ...places])
 		// Gruppen in der Reihenfolge ihres besten Treffers, Orte zuletzt.
 		// Orte und Gebiete kommen zuerst, wenn einer genau so heißt und kein
-		// Fundort, Fluss oder keine Straße den Namen trägt ("Minden", aber
-		// "Barkhausen" bleibt beim Lager), oder wenn einer so anfängt und
-		// kein lokaler Treffer den Begriff im Titel hat ("Kreis Minden",
-		// aber "Varus" bleibt bei den Texten statt beim Varusberg).
+		// Fluss den Namen trägt ("Minden", aber "Weser" bleibt beim Fluss),
+		// oder wenn einer so anfängt und kein lokaler Treffer den Begriff im
+		// Titel hat ("Kreis Minden").
 		const kinds = [...new Set(local.map((h) => h.kind))]
 		const typed = normalize(query).text
 		const label = (o) => normalize(o.label).text
-		// Als ganzes Wort: "Barkhausen" im Lagernamen zählt, "Senne" in
+		// Als ganzes Wort: "Weser" im Flussnamen zählt, "Senne" in
 		// "Sennestadt" nicht
 		const words = (text) => ` ${text.split(/[^\p{L}\p{N}]+/u).join(" ")} `
 		const word = (text) => words(text).includes(words(typed))
-		const onMap = local.some(
-			(h) => ["site", "river", "road"].includes(h.kind) && word(label(h)),
-		)
+		const onMap = local.some((h) => h.kind === "river" && word(label(h)))
 		const inTitle = local.some((h) => label(h).includes(typed))
 		const placesFirst =
 			(!onMap && places.some((o) => label(o) === typed)) ||
@@ -425,25 +401,7 @@ export default function SearchBox({ getMap, desktop }) {
 		const s = useMapStore.getState()
 		const map = getMap()
 		if (!desktop) s.setPanelOpen(false)
-		if (o.kind === "site") {
-			s.setSearchHit(null)
-			s.setInspect(null)
-			if (!s.siteTypes[o.type]) s.toggleSiteType(o.type)
-			// Gleiche Auswahl löst in der Karte keine neue Kamerafahrt aus.
-			// Erst auswählen, damit der Versatz die Sheethöhe kennt.
-			const same = s.selectedSite === o.id
-			s.setSelectedSite(o.id)
-			if (same) {
-				prefetchView(o.coordinates, 13)
-				map?.flyTo({
-					center: o.coordinates,
-					zoom: 13,
-					offset: centerOffset(),
-				})
-			}
-		} else if (o.kind === "river" || o.kind === "road") {
-			s.setSelectedSite(null)
-			if (o.kind === "road" && !s.showRoads) s.setShowRoads(true)
+		if (o.kind === "river") {
 			s.setSearchHit({
 				type: "Feature",
 				properties: { label: o.label },
@@ -451,7 +409,6 @@ export default function SearchBox({ getMap, desktop }) {
 			})
 			fit(o.bounds, 12)
 		} else if (o.kind === "place" || o.kind === "coord") {
-			s.setSelectedSite(null)
 			mark(o, [o.lon, o.lat])
 			prefetchView([o.lon, o.lat], o.zoom)
 			map?.flyTo({
@@ -460,7 +417,6 @@ export default function SearchBox({ getMap, desktop }) {
 				offset: centerOffset(),
 			})
 		} else if (o.kind === "area") {
-			s.setSelectedSite(null)
 			// Höhenzüge und Grenzen als Linie, Gemeinden nur mit Ausdehnung
 			if (o.geometry) {
 				s.setSearchHit({
@@ -622,7 +578,7 @@ export default function SearchBox({ getMap, desktop }) {
 				renderInput={(params) => (
 					<TextField
 						{...params}
-						placeholder="Suchen: Ort, Fundort, Fluss, Text …"
+						placeholder="Suchen: Ort, Fluss, Karte …"
 						sx={{ "& fieldset": { border: "none" } }}
 						slotProps={{
 							...params.slotProps,
@@ -672,7 +628,7 @@ export default function SearchBox({ getMap, desktop }) {
 							},
 							htmlInput: {
 								...params.slotProps.htmlInput,
-								"aria-label": "Karte und Texte durchsuchen",
+								"aria-label": "Orte, Flüsse und Karten durchsuchen",
 								enterKeyHint: "search",
 							},
 						}}

@@ -9,65 +9,13 @@ import { getRef } from "./literature"
  * wird. `refs` verweisen auf Daten und Methoden in src/data/literatur.json.
  * Ebenen fremder Dienste haben nur `refs`.
  */
-const MODEL_REFS = [
-	"lwl2023paderborn",
-	"juengerich2022",
-	"kaye2013",
-	"jones2011",
-	"tobler1993",
-	"lewis2021",
-	"barnes2014",
-	"beven1979",
-	"mapzen-terrain",
-	"osm",
-	"geobasis-uraufnahme",
-	"gd-bk50",
-	"lbeg-gum50",
-]
-
 const SOURCES = {
-	// Analyse
-	heatmap: {
-		own: "Potenzialkarte für unentdeckte Marschlager",
-		refs: MODEL_REFS,
-	},
-	candidates: { own: "Vermutete Lagerplätze", refs: MODEL_REFS },
-	rings: {
-		own: "Ein Tagesmarsch um bekannte Marschlager",
-		refs: ["lwl2023paderborn", "juengerich2022"],
-	},
-	routes: {
-		own: "Mögliche Marschwege",
-		refs: ["tobler1993", "lewis2021", "mapzen-terrain", "osm"],
-	},
-	stops: {
-		own: "Mögliche Etappenhalte",
-		refs: [...new Set(["tobler1993", "lewis2021", ...MODEL_REFS])],
-	},
+	// Hilfslinien
 	boundary: { refs: ["osm"] },
-	roads: { own: "Römerstraßen", refs: ["itinere2025", "osm"] },
-	waterways: {
-		own: "Bäche und Flüsse vor der Begradigung",
-		refs: [
-			"barnes2014",
-			"mapzen-terrain",
-			"geobasis-uraufnahme",
-			"gerlach2022",
-			"osm",
-		],
-	},
 	// Gelände
 	relief: { refs: ["mapzen-terrain"] },
 	"schummerung-nrw": { refs: ["geobasis-schummerung"] },
 	"schummerung-nrw-col": { refs: ["geobasis-schummerung"] },
-	lrm: {
-		own: "Laserscan-Ansicht (Local Relief Model) an Kandidaten und Lagern",
-		refs: ["hesse2010", "geobasis-dgm1-wcs"],
-	},
-	lines: {
-		own: "Erkannte gerade Strukturen",
-		refs: ["duda1972", "hesse2010", "geobasis-dgm1-wcs"],
-	},
 	"schummerung-de": { refs: ["bkg-schummerung"] },
 	// Gewässer und Böden
 	"osm-gewaesser": { refs: ["osm"] },

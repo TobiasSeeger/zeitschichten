@@ -19,33 +19,9 @@ function saveServices(layers) {
 }
 
 import { BASE_LAYERS, OVERLAYS } from "@/lib/layers"
-import { DEFAULT_PARAMS } from "@/lib/potential/model"
-import { SITE_TYPES } from "@/lib/sites"
-
-const DEFAULT_RING_SOURCE = "marching"
-
-/** Weichen Modell oder Tagesmarsch von den Standardwerten ab? */
-export const paramsChanged = (s) =>
-	s.ringSource !== DEFAULT_RING_SOURCE ||
-	JSON.stringify(s.params) !== JSON.stringify(DEFAULT_PARAMS)
-
-// Auf dem Handy erscheinen Infokarten im Sheet, das dafür weit genug aufgeht.
-// Schon hier, damit Kamerafahrten die neue Sheethöhe kennen.
-const showCard = (s) =>
-	typeof window !== "undefined" && window.innerWidth < 900
-		? { panelOpen: true, sheetFrac: Math.max(s.sheetFrac, 0.42) }
-		: null
 
 // Schalter für alles über der Grundkarte, die nicht in overlays stehen
-const SWITCHES = [
-	"showRings",
-	"showWaterways",
-	"showRoutes",
-	"showStages",
-	"showCandidates",
-	"showRoads",
-	"showRegion",
-]
+const SWITCHES = ["showRegion"]
 
 /** Sichtbarkeit aller Ebenen außer der Grundkarte. */
 function visibility(s) {
@@ -53,8 +29,6 @@ function visibility(s) {
 		overlays: Object.fromEntries(
 			Object.entries(s.overlays).map(([id, o]) => [id, o.visible]),
 		),
-		siteTypes: s.siteTypes,
-		heatmap: s.heatmap.visible,
 		custom: Object.fromEntries(s.customLayers.map((l) => [l.id, l.visible])),
 		...Object.fromEntries(SWITCHES.map((k) => [k, s[k]])),
 	}
@@ -74,8 +48,6 @@ function applyVisibility(s, v) {
 				{ ...o, visible: v.overlays[id] ?? o.visible },
 			]),
 		),
-		siteTypes: v.siteTypes,
-		heatmap: { ...s.heatmap, visible: v.heatmap },
 		customLayers,
 		...Object.fromEntries(SWITCHES.map((k) => [k, v[k]])),
 	}
@@ -86,8 +58,6 @@ export function anyLayerVisible(s) {
 	const v = visibility(s)
 	return [
 		...Object.values(v.overlays),
-		...Object.values(v.siteTypes),
-		v.heatmap,
 		...Object.values(v.custom),
 		...SWITCHES.map((k) => v[k]),
 	].some(Boolean)
@@ -101,15 +71,7 @@ export const useMapStore = create((set) => ({
 			{ visible: o.visible ?? false, opacity: o.opacity ?? 0.8 },
 		]),
 	),
-	siteTypes: Object.fromEntries(SITE_TYPES.map((t) => [t.id, true])),
-	showRings: true,
-	showWaterways: true,
-	showRoutes: true,
-	// Nummerierte Punkte der Analyse (vermutete Lagerplätze)
-	showCandidates: true,
-	// Etappenhalte beim Start aus, sie stehen unter „Weitere Ebenen“
-	showStages: false,
-	// Umriss des Kreises, für den die Analyse rechnet
+	// Umriss des Kreises Minden-Lübbecke als Orientierung
 	showRegion: true,
 	// Sichtbarkeit vor „Alle Ebenen aus“, zum Wiederherstellen
 	hiddenLayers: null,
@@ -121,43 +83,14 @@ export const useMapStore = create((set) => ({
 		typeof window !== "undefined" && window.innerWidth < 900
 			? "start"
 			: "layers",
-	// Aufgeklappte Abschnitte der Seitenleiste: weitere Ebenen, eigene
-	// Karten, Experteneinstellungen und Modellprüfung der Analyse
-	folds: { more: false, custom: false, expert: false, check: false },
+	// Aufgeklappte Abschnitte der Seitenleiste: weitere Ebenen, eigene Karten
+	folds: { more: false, custom: false },
 	// Höhe des aufgeklappten Sheets als Anteil der Fensterhöhe (Handy)
 	sheetFrac: 0.5,
-	showRoads: true,
-
-	// Potenzialanalyse
-	params: DEFAULT_PARAMS,
-	// Welche Fundstellen als Ausgangspunkt der Tagesmarsch-Ringe dienen
-	ringSource: DEFAULT_RING_SOURCE,
-	heatmap: { visible: true, opacity: 0.7, threshold: 0.5 },
-	analysis: {
-		status: "idle",
-		stage: "",
-		progress: 0,
-		error: null,
-		notice: null,
-	},
-	result: null,
-	waterways: null,
-	// Aus dem Höhenmodell abgeleitetes Gewässernetz (GeoJSON-Linien)
-	derivedWaterways: null,
-	// Mögliche Marschrouten zwischen bekannten Lagern (GeoJSON)
-	routes: null,
-	// Überregionales Netz: Routen, Etappenhalte, große Flüsse (vorberechnet)
-	network: null,
-	// Laserscan-Fenster und erkannte gerade Strukturen (vorberechnet)
-	lineaments: null,
 	// Eigene Karten: Dienste, GeoTIFF, Bild mit World-File, GeoJSON/KML/GPX
 	customLayers: typeof window === "undefined" ? [] : loadServices(),
-	selectedSite: null,
-	inspect: null,
 	// Hervorgehobener Suchtreffer (GeoJSON-Feature) auf der Karte
 	searchHit: null,
-	// Rang des Kandidaten, über dem in der Liste die Maus steht
-	hoveredCandidate: null,
 
 	setBaseLayer: (baseLayer) => set({ baseLayer }),
 	// Zustand eingeschalteter Ebenen aus der Karte: "loading", "zoom"
@@ -168,21 +101,6 @@ export const useMapStore = create((set) => ({
 		set((s) => ({
 			overlays: { ...s.overlays, [id]: { ...s.overlays[id], ...patch } },
 		})),
-	toggleSiteType: (id) =>
-		set((s) => ({ siteTypes: { ...s.siteTypes, [id]: !s.siteTypes[id] } })),
-	setAllSiteTypes: (on) =>
-		set((s) => ({
-			siteTypes: Object.fromEntries(
-				Object.keys(s.siteTypes).map((k) => [k, on]),
-			),
-		})),
-	setShowRings: (showRings) => set({ showRings }),
-	setShowWaterways: (showWaterways) => set({ showWaterways }),
-	setShowRoutes: (showRoutes) => set({ showRoutes }),
-	setShowCandidates: (showCandidates) => set({ showCandidates }),
-	setHoveredCandidate: (hoveredCandidate) => set({ hoveredCandidate }),
-	setShowStages: (showStages) => set({ showStages }),
-	setShowRegion: (showRegion) => set({ showRegion }),
 	// Hauptschalter: alles aus und merken, beim Einschalten zurück
 	setAllLayers: (on) =>
 		set((s) => {
@@ -200,8 +118,6 @@ export const useMapStore = create((set) => ({
 				hiddenLayers: v,
 				...applyVisibility(s, {
 					overlays: off(v.overlays),
-					siteTypes: off(v.siteTypes),
-					heatmap: false,
 					custom: off(v.custom),
 					...off(Object.fromEntries(SWITCHES.map((k) => [k, true]))),
 				}),
@@ -211,25 +127,6 @@ export const useMapStore = create((set) => ({
 	setPanelTab: (panelTab) => set({ panelTab }),
 	setFold: (id, open) => set((s) => ({ folds: { ...s.folds, [id]: open } })),
 	setSheetFrac: (sheetFrac) => set({ sheetFrac }),
-	setShowRoads: (showRoads) => set({ showRoads }),
-	setParams: (patch) => set((s) => ({ params: { ...s.params, ...patch } })),
-	// Modell und Tagesmarsch-Ausgangspunkte auf die Standardwerte
-	resetParams: () =>
-		set({ params: DEFAULT_PARAMS, ringSource: DEFAULT_RING_SOURCE }),
-	setWeight: (key, value) =>
-		set((s) => ({
-			params: { ...s.params, weights: { ...s.params.weights, [key]: value } },
-		})),
-	setRingSource: (ringSource) => set({ ringSource }),
-	setHeatmap: (patch) => set((s) => ({ heatmap: { ...s.heatmap, ...patch } })),
-	setAnalysis: (patch) =>
-		set((s) => ({ analysis: { ...s.analysis, ...patch } })),
-	setResult: (result) => set({ result }),
-	setWaterways: (waterways) => set({ waterways }),
-	setDerivedWaterways: (derivedWaterways) => set({ derivedWaterways }),
-	setRoutes: (routes) => set({ routes }),
-	setNetwork: (network) => set({ network }),
-	setLineaments: (lineaments) => set({ lineaments }),
 	addCustomLayer: (layer) =>
 		set((s) => {
 			const customLayers = [
@@ -256,9 +153,5 @@ export const useMapStore = create((set) => ({
 			saveServices(customLayers)
 			return { customLayers }
 		}),
-	setSelectedSite: (selectedSite) =>
-		set((s) => ({ selectedSite, ...(selectedSite && showCard(s)) })),
-	setInspect: (inspect) =>
-		set((s) => ({ inspect, ...(inspect && showCard(s)) })),
 	setSearchHit: (searchHit) => set({ searchHit }),
 }))

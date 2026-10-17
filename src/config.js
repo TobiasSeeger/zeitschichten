@@ -5,9 +5,9 @@
  * .env.example). Next.js setzt NEXT_PUBLIC_*-Werte zur Build-Zeit fest ein,
  * Bun liest sie für die Skripte aus .env bzw. .env.local.
  *
- * Inhaltliche Einstellungen (Regionen, Fundstellen, Ebenen, Modellgewichte)
- * stehen nicht hier, sondern in src/lib/regions.js, src/data/*.json,
- * src/lib/layers.js und src/lib/potential/model.js.
+ * Inhaltliche Einstellungen (Startausschnitt, Ebenen, Altkarten) stehen
+ * nicht hier, sondern in src/lib/regions.js, src/lib/layers.js und
+ * src/data/*.json.
  */
 
 const pick = (value, fallback) => (value ? value : fallback)
@@ -38,8 +38,7 @@ export const assetVersion = (file) => hashes[file] ?? ""
 
 /** Kacheldienste. Alle drei müssen CORS für die eigene Domain erlauben. */
 export const TILES = {
-	// Höhenmodell im Terrarium-Format (Mapzen). Fällt bei Fehlern auf die
-	// Originalkacheln auf AWS zurück, siehe src/lib/terrain.js.
+	// Höhenmodell im Terrarium-Format (Mapzen) für das farbige Relief
 	dem: pick(
 		process.env.NEXT_PUBLIC_DEM_TILES,
 		"https://tiles.erleben.app/dem/{z}/{x}/{y}",
@@ -70,6 +69,10 @@ export const CITATION = {
 	year: 2026,
 	version: "0.1.0",
 	title: "Römerlager in Westfalen. Potenzialkarte für unentdeckte Marschlager",
+	// Startkarte: Zeile unter dem Titel und kurze Einführung
+	subtitle: "Historische Karten für den Kreis Minden-Lübbecke",
+	intro:
+		"Wie sah der Kreis Minden-Lübbecke früher aus? Die Karte legt historische Karten von 1650 bis 1945 über das heutige Luftbild. Beim Start zeigt sie die Preußische Uraufnahme um 1840, dazu Gewässer, Moore, Wald und Wege aus dieser Zeit.",
 	url: pick(
 		process.env.NEXT_PUBLIC_SITE_URL,
 		"https://experiments.erleben.app/heimatschichten/",

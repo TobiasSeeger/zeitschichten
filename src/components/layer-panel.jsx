@@ -4,7 +4,6 @@ import InfoIcon from "@mui/icons-material/InfoOutlined"
 import {
 	Box,
 	Button,
-	Checkbox,
 	CircularProgress,
 	Collapse,
 	FormControlLabel,
@@ -28,7 +27,6 @@ import {
 } from "@/lib/layers"
 import { prefetchLayer } from "@/lib/prefetch"
 import { DEFAULT_REGION } from "@/lib/regions"
-import { SITE_TYPES } from "@/lib/sites"
 import { anyLayerVisible, useMapStore } from "@/store/use-map-store"
 import { openCite } from "./cite-dialog"
 import CustomLayers from "./custom-layers"
@@ -62,9 +60,7 @@ export default function LayerPanel({ onFlyTo }) {
 	const setFold = useMapStore((s) => s.setFold)
 	const customLayers = useMapStore((s) => s.customLayers)
 	// Zahl, kein Array, sonst rendert der Selektor endlos neu
-	const helpers = useMapStore(
-		(s) => [s.showStages, s.showRegion].filter(Boolean).length,
-	)
+	const helpers = useMapStore((s) => (s.showRegion ? 1 : 0))
 
 	const [hasAltkarten, setHasAltkarten] = useState(false)
 	useEffect(() => {
@@ -106,43 +102,6 @@ export default function LayerPanel({ onFlyTo }) {
 			<BasePicker />
 
 			<SectionTitle>Auf der Karte</SectionTitle>
-			<SitesRow />
-			<StoreSwitch
-				field="heatmap"
-				id="heatmap"
-				label="Potenzialkarte"
-				note="Farbfläche der Analyse. Schwelle und Deckkraft im Reiter Analyse."
-			/>
-			<StoreSwitch
-				field="showCandidates"
-				id="candidates"
-				label="Vermutete Lagerplätze"
-				note="Am besten bewertete Stellen der Analyse, nummeriert nach Rang"
-			/>
-			<StoreSwitch
-				field="showRoutes"
-				id="routes"
-				label="Mögliche Marschwege"
-				note="Weg geringster Gehzeit zwischen bekannten Lagern (Modell), gestrichelt zu Kalkriese und zum vermuteten Lager Löhne"
-			/>
-			<StoreSwitch
-				field="showRoads"
-				id="roads"
-				label="Römerstraßen"
-				note="Belegt durchgezogen, vermutet gestrichelt"
-			/>
-			<StoreSwitch
-				field="showRings"
-				id="rings"
-				label="1 Tagesmarsch um jedes Marschlager"
-				note="Ring von rund 20 km, Abstand und Streuung im Reiter Analyse unter Experteneinstellungen"
-			/>
-			<StoreSwitch
-				field="showWaterways"
-				id="waterways"
-				label="Bäche und Flüsse vor der Begradigung"
-				note="Die Gewässer, mit denen das Modell rechnet, ohne Kanäle. Dunkelblau der alte Lauf: große Flüsse wie in der Uraufnahme um 1840, im Kreis Minden-Lübbecke wie auf den Kreiskarten 1843/44, bei Haltern und Xanten römerzeitlich. Hellblau der heutige Lauf, wo kein alter belegt ist. Woher die Bäche stammen, steht im Reiter Analyse unter Experteneinstellungen."
-			/>
 			{main.map((layer) => (
 				<OverlayItem key={layer.id} layer={layer} onFlyTo={onFlyTo} />
 			))}
@@ -156,18 +115,12 @@ export default function LayerPanel({ onFlyTo }) {
 				open={folds.more}
 				onToggle={(open) => setFold("more", open)}
 			>
-				<SectionTitle>Hilfslinien des Modells</SectionTitle>
-				<StoreSwitch
-					field="showStages"
-					id="stops"
-					label="Mögliche Etappenhalte"
-					note="Nach je einem Tagesmarsch entlang der Marschwege, die beste Stelle im Umkreis von 3 km"
-				/>
+				<SectionTitle>Hilfslinien</SectionTitle>
 				<StoreSwitch
 					field="showRegion"
 					id="boundary"
-					label="Grenze des Untersuchungsgebiets"
-					note={`${DEFAULT_REGION.label}, für den die Analyse rechnet`}
+					label={`Grenze ${DEFAULT_REGION.label}`}
+					note="Heutige Kreisgrenze als Orientierung"
 				/>
 				{moreGroups.map((group) => (
 					<Box key={group}>
@@ -301,16 +254,10 @@ function LayerRow({
 	)
 }
 
-/** Schalter für ein Feld im Store (showRoutes usw. oder heatmap). */
+/** Schalter für ein Feld im Store (showRegion). */
 function StoreSwitch({ field, id, label, note }) {
-	const checked = useMapStore((s) =>
-		field === "heatmap" ? s.heatmap.visible : s[field],
-	)
-	const set = (on) => {
-		const s = useMapStore.getState()
-		if (field === "heatmap") s.setHeatmap({ visible: on })
-		else useMapStore.setState({ [field]: on })
-	}
+	const checked = useMapStore((s) => s[field])
+	const set = (on) => useMapStore.setState({ [field]: on })
 	return (
 		<LayerRow
 			id={id}
@@ -318,52 +265,6 @@ function StoreSwitch({ field, id, label, note }) {
 			onChange={set}
 			label={label}
 			details={<Details layer={{ id, label, note }} />}
-		/>
-	)
-}
-
-/** Alle Fundstellen mit einem Schalter, die Arten einzeln im Info-Bereich. */
-function SitesRow() {
-	const siteTypes = useMapStore((s) => s.siteTypes)
-	const toggleSiteType = useMapStore((s) => s.toggleSiteType)
-	const setAllSiteTypes = useMapStore((s) => s.setAllSiteTypes)
-	const on = SITE_TYPES.filter((t) => siteTypes[t.id])
-	return (
-		<LayerRow
-			id="fundstellen"
-			checked={on.length > 0}
-			onChange={setAllSiteTypes}
-			label="Fundstellen"
-			marker={
-				on.length > 0 &&
-				on.length < SITE_TYPES.length && (
-					<Typography variant="caption" color="text.secondary">
-						{on.length} von {SITE_TYPES.length}
-					</Typography>
-				)
-			}
-			details={
-				<Stack>
-					{SITE_TYPES.map((t) => (
-						<FormControlLabel
-							key={t.id}
-							control={
-								<Checkbox
-									size="small"
-									checked={siteTypes[t.id]}
-									onChange={() => toggleSiteType(t.id)}
-									sx={{
-										py: 0.25,
-										color: t.color,
-										"&.Mui-checked": { color: t.color },
-									}}
-								/>
-							}
-							label={<Typography variant="body2">{t.label}</Typography>}
-						/>
-					))}
-				</Stack>
-			}
 		/>
 	)
 }

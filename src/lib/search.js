@@ -1,27 +1,16 @@
 import { assetUrl } from "@/config"
 import rivers from "@/data/fluesse.json"
 import sources from "@/data/quellen.json"
-import roads from "@/data/roemerstrassen.json"
 import { BASE_LAYERS, OVERLAYS } from "./layers"
 import { resolveSource } from "./literature"
 import { inMapBounds } from "./regions"
-import { SITE_TYPE_BY_ID, SITES } from "./sites"
 import { utmToLonLat } from "./utm"
 
 /**
- * Globale Suche über alles, was die Karte kennt: Fundorte, Flüsse,
- * Römerstraßen, Ebenen und Quellen. Heutige Orte kommen zusätzlich aus
- * OpenStreetMap (Photon).
+ * Globale Suche über alles, was die Karte kennt: Flüsse, Ebenen und
+ * Quellen. Heutige Orte und Gebiete kommen zusätzlich aus OpenStreetMap
+ * (vorab gezogen, siehe loadPlaces).
  */
-
-// Lateinische Namen, die in den Daten selbst nicht stehen
-const SITE_ALIASES = {
-	vetera: ["Castra Vetera"],
-	"haltern-hauptlager": ["Aliso?"],
-	anreppen: ["Aliso?"],
-	oberaden: ["Aliso?"],
-	kalkriese: ["Varusschlacht", "clades Variana", "saltus Teutoburgiensis"],
-}
 
 const RIVER_LATIN = {
 	Rhein: "Rhenus",
@@ -144,29 +133,6 @@ function fuzzyWord(tok, words) {
 function buildIndex() {
 	const entries = []
 
-	for (const f of SITES.features) {
-		const p = f.properties
-		const aliases = SITE_ALIASES[p.id] ?? []
-		entries.push({
-			kind: "site",
-			key: `site:${p.id}`,
-			id: p.id,
-			type: p.type,
-			coordinates: f.geometry.coordinates,
-			label: p.name,
-			secondary: [SITE_TYPE_BY_ID[p.type]?.label, p.dating]
-				.filter(Boolean)
-				.join(", "),
-			color: SITE_TYPE_BY_ID[p.type]?.color,
-			fields: [
-				field(p.name, 4),
-				...aliases.map((a) => field(a, 4)),
-				field(p.place, 3),
-				field(p.description, 1),
-			],
-		})
-	}
-
 	for (const [name, river] of Object.entries(rivers)) {
 		// Verlauf als Liste oder als { coords, parts }
 		const coords = Array.isArray(river) ? river : river.coords
@@ -179,29 +145,6 @@ function buildIndex() {
 			geometry: { type: "LineString", coordinates: coords },
 			bounds: boundsOf(coords),
 			fields: [field(name, 4), field(latin, 4)],
-		})
-	}
-
-	// Römerstraßen bestehen aus vielen Abschnitten gleichen Namens
-	const byName = new Map()
-	for (const f of roads.features) {
-		const p = f.properties
-		const e = byName.get(p.name) ?? { lines: [], certainty: new Set(), p }
-		e.lines.push(f.geometry.coordinates)
-		e.certainty.add(p.certainty)
-		byName.set(p.name, e)
-	}
-	const CERTAINTY = ["belegt", "vermutet", "hypothetisch"]
-	for (const [name, e] of byName) {
-		const certainty = CERTAINTY.find((c) => e.certainty.has(c))
-		entries.push({
-			kind: "road",
-			key: `road:${name}`,
-			label: name,
-			secondary: `Römerstraße, Verlauf ${certainty === "hypothetisch" ? "Hypothese" : certainty}`,
-			geometry: { type: "MultiLineString", coordinates: e.lines },
-			bounds: boundsOf(e.lines),
-			fields: [field(name.replace(/-/g, " "), 3)],
 		})
 	}
 
@@ -275,7 +218,7 @@ function snippet(entry, tokens) {
 	return null
 }
 
-const LIMITS = { site: 6, river: 4, road: 4, layer: 4, source: 4 }
+const LIMITS = { river: 4, layer: 4, source: 4 }
 
 /**
  * Lokale Treffer, nach Relevanz sortiert und je Art begrenzt. Mit kinds
@@ -297,7 +240,7 @@ export function searchLocal(query, { kinds, limit } = {}) {
 			let s = tokenScore(entry, tok)
 			let t = tok
 			let f = null
-			// Tippfehler: "Kalkrise" -> Kalkriese
+			// Tippfehler: "Neuaufnhame" -> Neuaufnahme
 			if (!s) {
 				for (const fl of entry.fields) {
 					const w = fuzzyWord(tok, fl.words)

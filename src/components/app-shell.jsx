@@ -4,8 +4,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import ExploreIcon from "@mui/icons-material/Explore"
 import LayersIcon from "@mui/icons-material/Layers"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
-import PlaceIcon from "@mui/icons-material/Place"
-import TravelExploreIcon from "@mui/icons-material/TravelExplore"
 import {
 	Box,
 	CircularProgress,
@@ -18,7 +16,6 @@ import {
 } from "@mui/material"
 import dynamic from "next/dynamic"
 import { useCallback, useRef } from "react"
-import { usePotential } from "@/lib/potential/use-potential"
 import { prefetchView } from "@/lib/prefetch"
 import { centerOffset, DESKTOP_QUERY } from "@/lib/sheet"
 import { useMapStore } from "@/store/use-map-store"
@@ -28,14 +25,12 @@ import SearchBox from "./search-box"
 
 const MapView = dynamic(() => import("./map-view"), { ssr: false })
 
-// Reiter, Infokarten und Zitierdialog sind beim Start nicht zu sehen. Sie
+// Reiter und Zitierdialog sind beim Start nicht zu sehen. Sie
 // kommen in eigenen Chunks und werden geladen, sobald die Karte steht und
 // der Browser Luft hat (preloadPanels), spätestens beim ersten Öffnen.
 const PANEL_MODULES = {
 	layers: () => import("./layer-panel"),
-	analysis: () => import("./analysis-panel"),
-	sites: () => import("./sites-panel"),
-	info: () => import("./info-cards"),
+	sources: () => import("./sources-panel"),
 	cite: () => import("./cite-dialog"),
 }
 const loading = () => (
@@ -44,18 +39,7 @@ const loading = () => (
 	</Box>
 )
 const LayerPanel = dynamic(PANEL_MODULES.layers, { ssr: false, loading })
-const AnalysisPanel = dynamic(PANEL_MODULES.analysis, { ssr: false, loading })
-const SitesPanel = dynamic(
-	() => PANEL_MODULES.sites().then((m) => m.SitesPanel),
-	{ ssr: false, loading },
-)
-const SourcesPanel = dynamic(
-	() => PANEL_MODULES.sites().then((m) => m.SourcesPanel),
-	{ ssr: false, loading },
-)
-const InfoCards = dynamic(() => PANEL_MODULES.info().then((m) => m.InfoCards), {
-	ssr: false,
-})
+const SourcesPanel = dynamic(PANEL_MODULES.sources, { ssr: false, loading })
 const CiteDialog = dynamic(PANEL_MODULES.cite, { ssr: false })
 
 function preloadPanels() {
@@ -72,12 +56,6 @@ const WIDTH = 360
 const TABS = [
 	{ id: "start", label: "Start", icon: <ExploreIcon fontSize="small" /> },
 	{ id: "layers", label: "Ebenen", icon: <LayersIcon fontSize="small" /> },
-	{ id: "sites", label: "Fundorte", icon: <PlaceIcon fontSize="small" /> },
-	{
-		id: "analysis",
-		label: "Analyse",
-		icon: <TravelExploreIcon fontSize="small" />,
-	},
 	{ id: "sources", label: "Quellen", icon: <MenuBookIcon fontSize="small" /> },
 ]
 
@@ -119,7 +97,6 @@ export default function AppShell() {
 	const setOpen = useMapStore((s) => s.setPanelOpen)
 	const sheetFrac = useMapStore((s) => s.sheetFrac)
 	const setSheetFrac = useMapStore((s) => s.setSheetFrac)
-	const hasCard = useMapStore((s) => Boolean(s.selectedSite || s.inspect))
 
 	const onMapReady = useCallback((map) => {
 		mapRef.current = map
@@ -127,7 +104,6 @@ export default function AppShell() {
 		map.once("idle", preloadPanels)
 	}, [])
 	const getMap = useCallback(() => mapRef.current, [])
-	const { analyze } = usePotential(getMap)
 
 	const flyTo = useCallback(
 		(lon, lat, zoom = 14) => {
@@ -149,23 +125,13 @@ export default function AppShell() {
 
 	const content = (id) => (
 		<>
-			{id === "start" && <EasyContent onFlyTo={flyTo} heading />}
+			{id === "start" && <EasyContent heading />}
 			{id === "layers" && <LayerPanel onFlyTo={flyTo} />}
-			{id === "sites" && <SitesPanel />}
-			{id === "analysis" && (
-				<AnalysisPanel onAnalyze={analyze} onFlyTo={flyTo} />
-			)}
 			{id === "sources" && <SourcesPanel />}
 		</>
 	)
 
 	const select = (id) => {
-		// Auf dem Handy macht eine offene Infokarte dem gewählten Reiter Platz
-		if (hasCard) {
-			const s = useMapStore.getState()
-			s.setSelectedSite(null)
-			s.setInspect(null)
-		}
 		setTab(id)
 		setOpen(true)
 	}
@@ -208,7 +174,7 @@ export default function AppShell() {
 									Römerlager in Westfalen
 								</Typography>
 								<Typography variant="caption" color="text.secondary">
-									Karte, Analyse und Quellen
+									Karten und Quellen
 								</Typography>
 							</Box>
 							<IconButton
@@ -240,8 +206,7 @@ export default function AppShell() {
 			>
 				<MapView onMapReady={onMapReady} />
 				<SearchBox getMap={getMap} desktop={desktop} />
-				{desktop && !open && <EasyPanel onFlyTo={flyTo} />}
-				{desktop && <InfoCards />}
+				{desktop && !open && <EasyPanel />}
 				{!desktop && (
 					<BottomSheet
 						open={open}
@@ -250,19 +215,9 @@ export default function AppShell() {
 							setSheetFrac(next.frac)
 							setOpen(next.open)
 						}}
-						header={
-							<PanelTabs
-								tabs={TABS}
-								value={hasCard ? false : tab}
-								onSelect={select}
-							/>
-						}
+						header={<PanelTabs tabs={TABS} value={tab} onSelect={select} />}
 					>
-						{hasCard ? (
-							<InfoCards embedded />
-						) : (
-							<Box sx={{ px: 2, pb: 3 }}>{content(tab)}</Box>
-						)}
+						<Box sx={{ px: 2, pb: 3 }}>{content(tab)}</Box>
 					</BottomSheet>
 				)}
 			</Box>

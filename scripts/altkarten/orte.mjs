@@ -10,8 +10,10 @@
 import { mkdir, writeFile } from "node:fs/promises"
 import { VectorTile } from "@mapbox/vector-tile"
 import { PbfReader } from "pbf"
+import { TILES } from "../../src/config.js"
 import { lonLatToPixel, pixelToLonLat } from "../../src/lib/geo.js"
-import { VECTOR_TILES } from "../../src/lib/water.js"
+
+const VECTOR_TILES = TILES.vector
 
 const OUT = new URL("./.cache/orte.json", import.meta.url)
 const PASSES = [
