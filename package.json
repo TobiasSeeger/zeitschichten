@@ -4,13 +4,13 @@
 	"description": "Web-Karte der augusteischen Römerlager in Westfalen mit Potenzialmodell für unentdeckte Marschlager",
 	"license": "MIT",
 	"author": "Tim Krämer",
-	"homepage": "https://experiments.erleben.app/roemer/",
+	"homepage": "https://experiments.erleben.app/heimatschichten/",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/TimKraemer/roemerlager-westfalen.git"
+		"url": "git+https://github.com/TobiasSeeger/zeitschichten.git"
 	},
 	"bugs": {
-		"url": "https://github.com/TimKraemer/roemerlager-westfalen/issues"
+		"url": "https://github.com/TobiasSeeger/zeitschichten/issues"
 	},
 	"private": true,
 	"scripts": {

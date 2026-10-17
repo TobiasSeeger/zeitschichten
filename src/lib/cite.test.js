@@ -46,7 +46,7 @@ describe("formatCitations", () => {
 			[projectCsl(new Date(2026, 9, 6))],
 			"bibtex",
 		)
-		expect(text).toContain('author = {Kr{\\"a}mer, Tim}')
+		expect(text).toContain('title = {R{\\"o}merlager')
 		expect(text).toContain("note = {Abgerufen am 06.10.2026}")
 	})
 
@@ -68,7 +68,7 @@ describe("formatCitations", () => {
 		const csl = projectCsl(new Date(2026, 9, 6))
 		const { text } = await formatCitations([csl], "apa")
 		expect(text).toBe(
-			"Krämer, T. (2026). Römerlager in Westfalen. Potenzialkarte für unentdeckte Marschlager (Version 0.1.0) [Software]. https://experiments.erleben.app/roemer/",
+			"Seeger, T. (2026). Römerlager in Westfalen. Potenzialkarte für unentdeckte Marschlager (Version 0.1.0) [Software]. https://experiments.erleben.app/heimatschichten/",
 		)
 		const ris = await formatCitations([csl], "ris")
 		expect(ris.text).toContain("TY  - COMP")

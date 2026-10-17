@@ -63,16 +63,16 @@ export const TILES = {
  * NEXT_PUBLIC_SITE_URL und trägt sich hier als Autor ein.
  */
 export const CITATION = {
-	author: "Tim Krämer",
-	authorInverted: "Krämer, Tim",
-	family: "Krämer",
-	given: "Tim",
+	author: "Tobias Seeger",
+	authorInverted: "Seeger, Tobias",
+	family: "Seeger",
+	given: "Tobias",
 	year: 2026,
 	version: "0.1.0",
 	title: "Römerlager in Westfalen. Potenzialkarte für unentdeckte Marschlager",
 	url: pick(
 		process.env.NEXT_PUBLIC_SITE_URL,
-		"https://experiments.erleben.app/roemer/",
+		"https://experiments.erleben.app/heimatschichten/",
 	),
-	repository: "https://github.com/TimKraemer/roemerlager-westfalen",
+	repository: "https://github.com/TobiasSeeger/zeitschichten",
 }

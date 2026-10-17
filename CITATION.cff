@@ -8,12 +8,12 @@ abstract: >-
   Gegenprobe an bekannten Lagern, antiken Textstellen und Altkarten.
   Code und Texte sind weitgehend mit KI (Claude, Anthropic) entstanden.
 authors:
-  - family-names: "Krämer"
-    given-names: "Tim"
+  - family-names: "Seeger"
+    given-names: "Tobias"
 version: "0.1.0"
 date-released: 2026-10-06
-url: "https://experiments.erleben.app/roemer/"
-repository-code: "https://github.com/TimKraemer/roemerlager-westfalen"
+url: "https://experiments.erleben.app/heimatschichten/"
+repository-code: "https://github.com/TobiasSeeger/zeitschichten"
 license: MIT
 type: software
 keywords:

@@ -1,6 +1,6 @@
 # Römerlager Westfalen
 
-[![CI](https://github.com/TimKraemer/roemerlager-westfalen/actions/workflows/ci.yml/badge.svg)](https://github.com/TimKraemer/roemerlager-westfalen/actions/workflows/ci.yml)
+[![CI](https://github.com/TobiasSeeger/zeitschichten/actions/workflows/ci.yml/badge.svg)](https://github.com/TobiasSeeger/zeitschichten/actions/workflows/ci.yml)
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-blue.svg)](LICENSE)
 [![Daten: CC BY 4.0](https://img.shields.io/badge/Daten-CC%20BY%204.0-lightgrey.svg)](docs/daten.md)
 
@@ -9,7 +9,11 @@ mit einem offenen Potenzialmodell für noch unentdeckte Marschlager. Die
 Karte zeigt Suchräume für Prospektion und Laserscan-Auswertung, keine
 Fundstellen.
 
-Live: https://experiments.erleben.app/roemer/
+Live: https://experiments.erleben.app/heimatschichten/
+
+Dies ist ein Fork von Tim Krämers
+[Römerlager Westfalen](https://github.com/TimKraemer/roemerlager-westfalen),
+dessen Fassung unter https://experiments.erleben.app/roemer/ läuft.
 
 ![Startansicht mit Potenzialkarte für den Kreis Minden-Lübbecke](docs/screenshot.jpg)
 
@@ -56,7 +60,7 @@ Was das für die Nutzung heißt:
 - Die Übersetzungen der antiken Texte sind mit KI erstellt und nicht philologisch geprüft.
 - Die Erzählung der Texte (Kapitel in `src/data/kapitel.json`, Sprechtexte in `src/data/vertonung.json`) ist mit KI geschrieben und mit einer KI-Stimme vertont (ElevenLabs v3 über fal.ai, erzeugt mit `scripts/build-audio.mjs`).
 - Das Modell ist eine nachvollziehbare Rechenvorschrift, kein archäologisches Gutachten. Seine Annahmen und Grenzen stehen in [docs/modell.md](docs/modell.md).
-- Fehler bitte als [Issue](https://github.com/TimKraemer/roemerlager-westfalen/issues) melden, möglichst mit Beleg.
+- Fehler bitte als [Issue](https://github.com/TobiasSeeger/zeitschichten/issues) melden, möglichst mit Beleg.
 
 ## Schnellstart
 
