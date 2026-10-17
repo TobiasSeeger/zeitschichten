@@ -6,65 +6,13 @@ Dateien in der ersten Tabelle, alles andere erzeugen Skripte unter
 
 ## Von Hand gepflegt
 
-Lizenz: CC BY 4.0, Namensnennung „Tim Krämer, Römerlager Westfalen“.
+Lizenz: CC BY 4.0, Namensnennung „Tobias Seeger, Heimatschichten, nach Tim Krämer, Römerlager Westfalen“.
 
 | Datei | Inhalt |
 |-------|--------|
-| `src/data/fundstellen.json` | Bekannte Fundstellen als GeoJSON, Schema unten |
 | `src/data/literatur.json` | Literatur, Presse und Datendienste als CSL-JSON, Schema unten |
 | `src/data/quellen.json` | Gruppen und Reihenfolge der Quellen im Reiter „Quellen“, verweist per `ref` auf die Literatur |
-| `src/data/texte.json` | Antike Textstellen mit lateinischem bzw. griechischem Original, deutscher Übersetzung und Kartenbezug |
-| `src/lib/criteria.js` | Erklärtexte und Belege je Modellkriterium |
-| `src/lib/text-geo.js` | Orte, Räume und Richtungen je Textstelle für die Karte |
-| `src/lib/regions.js` | Vorberechnete Regionen und Einstellungen des Marschwege-Netzes |
-
-Die lateinischen Originale stammen aus The Latin Library, Cassius Dio aus
-LacusCurtius (Thayer). Offensichtliche Scanfehler der Vorlagen sind
-berichtigt und im Feld `note` vermerkt. Die deutschen Übersetzungen sind
-mit KI erstellt und nicht philologisch geprüft, die von Cassius Dio folgt
-der gemeinfreien englischen Übersetzung von E. Cary (Loeb, 1917).
-
-### Schema einer Fundstelle
-
-```json
-{
-	"type": "Feature",
-	"geometry": { "type": "Point", "coordinates": [8.9121, 52.2571] },
-	"properties": {
-		"id": "barkhausen",
-		"name": "Porta Westfalica-Barkhausen „Auf der Lake“",
-		"type": "marschlager",
-		"status": "bestätigt",
-		"precision": "Lagermitte, etwa ±200–300 m",
-		"size_ha": "unbekannt (3 ha ergraben)",
-		"dating": "augusteisch, entdeckt 2008",
-		"place": "Porta Westfalica, Kreis Minden-Lübbecke",
-		"description": "Marschlager an der Weser nördlich der Porta. …",
-		"sources": [
-			{ "ref": "tremmel2011a", "note": "Lagepläne der Grabung" },
-			{ "label": "Wikipedia: Marschlager Porta Westfalica", "url": "https://de.wikipedia.org/wiki/Marschlager_Porta_Westfalica" }
-		],
-		"inModel": true
-	}
-}
-```
-
-| Feld | Bedeutung |
-|------|-----------|
-| `id` | Kleinbuchstaben und Bindestriche, eindeutig, wird in Routen und Vorberechnung referenziert |
-| `type` | `legionslager`, `kastell`, `marschlager`, `posten`, `schlachtfeld`, `fund` oder `verdacht` (`src/lib/sites.js`) |
-| `status` | `bestätigt`, `Verdacht mit guten Indizien`, `Hypothese` usw., frei formuliert |
-| `precision` | Wie genau die Koordinate ist. Bei unveröffentlichten oder geschützten Plätzen nur grob, siehe unten |
-| `inModel` | `true` für augusteische Lager, die Ringe und Routen im Modell erzeugen |
-| `routeTarget`, `routeNote` | Optional. Ziel einer Marschroute ohne gesichertes Lager (Kalkriese, Suchraum Löhne) |
-| `waypoint` | Optional. Zwangspunkt für Routen |
-| `sources` | Mindestens eine Quelle. Fachliteratur steht in `literatur.json` und wird per `ref` eingebunden, optional mit `note`. Wikipedia und Projektseiten direkt mit `label` und `url`, nur zusätzlich |
-
-Koordinaten stammen aus veröffentlichten Quellen (Fachliteratur,
-LWL-Pressemitteilungen, Wikipedia). Bodendenkmäler sind gesetzlich
-geschützt. Genauere Lagen als die veröffentlichten gehören nicht in dieses
-Repository, und die Potenzialkarte ist keine Aufforderung zum Graben oder
-Sondeln.
+| `src/lib/regions.js` | Startausschnitt und Grenzen der Karte |
 
 ### Literatur
 
@@ -117,16 +65,12 @@ citation-js selbst mit.
 
 | Datei | Skript | Herkunft | Lizenz |
 |-------|--------|----------|--------|
-| `src/data/roemerstrassen.json` | `scripts/build-roads.mjs` | Itiner-e (Zenodo, DOI 10.5281/zenodo.17122148), Hellwege nach der heutigen B 65 aus OpenStreetMap | CC BY 4.0 (Itiner-e), ODbL 1.0 (OSM-Anteile) |
 | `src/data/fluesse.json` | `scripts/build-rivers.mjs`, Weser im Kreis Minden-Lübbecke aus `scripts/altkarten/nachzeichnen.sh weser` | Preußische Uraufnahme (Geobasis NRW), OpenStreetMap, Literatur für römerzeitliche Abschnitte, Kreiskarte Minden 1843 (Weser) | ODbL 1.0 |
 | `src/data/kreis-minden-luebbecke.json` | einmalig über Nominatim | OpenStreetMap | ODbL 1.0 |
 | `src/data/altkarten.json` | `scripts/altkarten/alt.sh index` | Verzeichnis der entzerrten Altkarten | CC BY 4.0 |
 | `src/data/altkarten-quellen.json` | von Hand | Bestandsnachweise der Scans (SLUB, Landesarchiv NRW) | CC BY 4.0 |
 | `scripts/altkarten/gcp/*.json` | von Hand, `alt.sh fit` und `feinpass.sh` | Passpunkte je Altkarte | CC BY 4.0 |
 | `scripts/altkarten/fluesse/**/*.json` | `nachzeichnen.sh vorschlag`, von Hand korrigiert | Stützpunkte der nachgezeichneten Gewässer in Pixeln der Scans, Kreisgebiet je Karte | CC BY 4.0 |
-| `public/precomputed/minden-luebbecke.*`, `westfalen-netz.json` | `bun run precompute` | Mapzen Terrain Tiles (SRTM, EU-DEM), OpenStreetMap, Kreiskarten Minden 1843 und Lübbecke 1844 (Bäche, Weser), BK50 NRW, GUM50 NI, Kreiskarte Lübbecke 1844 (Moore) | CC BY 4.0, enthält Ableitungen aus ODbL-Daten und aus den Kreiskarten (CC BY-SA 4.0, Blatt Minden ungeprüft) |
-| `public/precomputed/lineaments*.json`, `lrm/*.jpg` | `bun run precompute`, `scripts/validate-lineaments.mjs` | DGM1 NRW (Geobasis NRW, dl-de/zero-2-0), OpenStreetMap | CC BY 4.0 |
-| `public/precomputed/validation.json` | `scripts/validate-model.mjs`, `scripts/optimize-weights.mjs` | Gegenprobe des Modells | CC BY 4.0 |
 | `public/precomputed/fluesse-kreiskarten.geojson` | `scripts/altkarten/nachzeichnen.sh geojson` | Kreiskarten Minden 1843 (Landesarchiv NRW, KSA 11782) und Lübbecke 1844 (W 051 Nr. 11781), OpenStreetMap als Leitlinien | ODbL 1.0, Ableitung aus den Kreiskarten |
 | `public/precomputed/moor-1844.geojson` | `scripts/altkarten/moor1844.py` aus den Umrissen in `scripts/altkarten/moor/1844-kreis-luebbecke.json` | Kreiskarte Lübbecke 1844 (Landesarchiv NRW, W 051 Nr. 11781) | CC BY-SA 4.0 |
 | `public/precomputed/moor-zeit.geojson` | `scripts/altkarten/moor.sh` | BK50 NRW (GD NRW, dl-de/by-2-0), GUM50 (LBEG Niedersachsen), Überschwemmungsgebiete nach der preußischen Aufnahme (Land NRW, Dienst uesg) | Lizenzen der Landesämter |
@@ -134,7 +78,6 @@ citation-js selbst mit.
 | `public/precomputed/wege-zeit.geojson` | `scripts/altkarten/wege.sh` | Preußische Uraufnahme (Geobasis NRW), OpenStreetMap als Leitlinien | ODbL 1.0 |
 | `public/precomputed/orte.json` | `scripts/build-places.mjs` | OpenStreetMap (OpenMapTiles) | ODbL 1.0 |
 | `public/precomputed/gebiete.json` | `scripts/build-areas.mjs` | OpenStreetMap über Overpass | ODbL 1.0 |
-| `public/models/oberaden.glb` | 3D-Modell aus der Bergkamen-App von erleben.app | eigene Rekonstruktion nach dem Gesamtplan der LWL-Archäologie | © erleben.app, alle Rechte vorbehalten |
 
 OpenStreetMap-Daten: © OpenStreetMap-Mitwirkende, verfügbar unter der Open
 Database License 1.0 (https://www.openstreetmap.org/copyright).
@@ -146,11 +89,6 @@ Netz (Kacheldienste in `src/config.js`).
 
 | Befehl | Dauer | Ergebnis |
 |--------|-------|----------|
-| `bun run precompute` | einige Minuten | Vorberechnete Regionen, Marschwege-Netz, Laserscan-Fenster |
-| `bun scripts/validate-model.mjs` | einige Minuten | Gegenprobe, `validation.json` |
-| `bun scripts/optimize-weights.mjs` | einige Minuten | Gewichtssuche mit Kreuzvalidierung |
-| `bun scripts/validate-lineaments.mjs` | kurz | Prüfung der Linienerkennung an bekannten Lagern |
-| `bun scripts/build-roads.mjs` | kurz | Römerstraßen, lädt Itiner-e von Zenodo |
 | `bun scripts/build-rivers.mjs [Fluss …] [--roemisch]` | beim ersten Mal etwa 1 h | Alte Flussläufe |
 | `scripts/altkarten/nachzeichnen.sh geojson` | wenige Minuten | Flüsse und Bäche der Kreiskarten 1843/44 |
 | `bun scripts/build-places.mjs` | einige Minuten | Ortsverzeichnis der Suche |
@@ -227,7 +165,7 @@ Flüsse und Bäche im Kreis Minden-Lübbecke sind von den Kreiskarten Minden
 Ebene „Flüsse und Bäche der Kreiskarten 1843/44“). Sie ersetzen dort die
 früher aus der Uraufnahme gelesenen Bäche (`gewaesser.sh`) und, für die
 Weser, den Lauf in `src/data/fluesse.json`. So gilt im Kreis eine einzige
-Fassung, in der Karte wie im Modell. Die Uraufnahme taugte dafür schlecht:
+Fassung, in der Karte. Die Uraufnahme taugte dafür schlecht:
 Ihre Bäche sind dünne blaugraue Linien, die sich nicht von Feldgrenzen und
 Wegen trennen lassen, und die Suche legte Bäche teils auf Straßen.
 
@@ -288,49 +226,6 @@ Das Ergebnis zeigt, welche heutigen Hauptstraßen es schon als Weg gab und
 wo der alte Weg anders lief. Verschwundene Wege fehlen, Feldgrenzen und
 Gräben entlang einer Straße können als Weg durchgehen. Zwischenstände und
 Prüfbilder (`--debug --bbox w s e n`) liegen in `scripts/altkarten/.cache`.
-
-### Bäche und Moore im Potenzialmodell
-
-Das Kriterium „Wasser“ misst den Abstand zum nächsten Bach. Standard ist
-die Wasserquelle „Aus Karten“: Es gilt das Gewässernetz der Region
-(`fluesse-kreiskarten.geojson`, im Kreis im Lauf der Kreiskarten 1843/44).
-Heutige Bäche aus OpenStreetMap zählen dort, wo in 400 m kein Lauf des
-Netzes liegt. Große Flüsse ab 150 km²
-Einzugsgebiet kommen weiter aus dem Höhenmodell, Lippe, Weser und Ems im
-alten Lauf.
-
-Die Ebene „Bäche und Flüsse vor der Begradigung“ zeigt davon nur das
-Gewässernetz der Region und die alten Läufe der großen Flüsse, dunkelblau
-der alte, hellblau der heutige Lauf. Kleine heutige Bäche und die aus dem
-Höhenmodell abgeleiteten Flüsse zählen im Modell, erscheinen aber nicht,
-weil ihre Rasterlinien neben den echten Läufen lägen.
-
-Das aus dem Höhenmodell abgeleitete Netz bleibt als Wahl „Aus
-Höhenmodell“. Ein Abgleich im Kreis (Oktober 2026) zeigt, warum es nicht
-mehr Standard ist. Im Flachland nördlich des Wiehengebirges lagen die
-berechneten Bäche im Median 295 m neben dem nächsten OSM-Bach, 153 von
-471 km hatten in 600 m gar keinen. Im Bergland waren es 116 m und 16 von
-111 km. Bei Eilhausen etwa legte das Höhenmodell die Flöthe rund 400 m zu
-weit nach Süden.
-
-Moore ziehen das Potenzial um bis zu 70 % herunter. Grundlage sind die
-Moorböden der BK50 NRW und der GUM50 Niedersachsen. Der NRW-Dienst zeichnet
-erst unter etwa 70 m je Pixel und liefert gröber ein leeres Bild, er wird
-deshalb wie der niedersächsische Dienst in Unterpixeln abgefragt. Bis
-Oktober 2026 fehlten dadurch im Modell alle Moore in NRW.
-
-Wo der Torf später abgestochen oder kultiviert wurde, fehlt das Moor in
-der BK50. Diese Flächen kommen aus der Kreiskarte Lübbecke 1844
-(`moor-1844.geojson`), etwa das Stemmer Moor, die Moore bei Moorort und
-Spreen und das Schwarze und Weiße Moor bei Nutteln. Die Karte zeichnet
-Heide und Torfmoor mit derselben Signatur. Aufgenommen sind deshalb nur
-Flächen mit Torfstich-Zeichen oder Moor-, Torf- und Bruchnamen, von Hand in
-Bildpixeln umrissen und über die Passpunkte der Karte entzerrt
-(Lagefehler im Median etwa 210 m). Brüche zählen zu 60 %. Altes Moor,
-Gessmoor, Nettelstedter und Eilhauser Moor fehlen in der Datei, weil die
-BK50 sie deckungsgleich führt. Ein Moor von 1844 gilt im Modell auch zur
-Römerzeit als Moor. Wie weit sich die Ränder in den knapp 2000 Jahren
-dazwischen verschoben haben, lässt die Karte nicht erkennen.
 
 ## Externe Dienste zur Laufzeit
 
