@@ -50,15 +50,14 @@ export function sheetHeight(open, frac, vh = window.innerHeight) {
 }
 
 /**
- * Von Suchleiste, Sheet und Zeitleiste der Texte verdeckte Ränder der
- * Karte, am Desktop null.
+ * Von Suchleiste und Sheet verdeckte Ränder der Karte, am Desktop null.
  */
 export function mapInsets() {
 	if (!isMobile()) return { top: 0, bottom: 0 }
 	const s = useMapStore.getState()
 	return {
 		top: SEARCH_INSET + safeInset("top"),
-		bottom: sheetHeight(s.panelOpen, s.sheetFrac) + s.timelineInset.bottom,
+		bottom: sheetHeight(s.panelOpen, s.sheetFrac),
 	}
 }
 

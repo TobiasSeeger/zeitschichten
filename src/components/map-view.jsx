@@ -38,7 +38,6 @@ import { prefetchView, setPrefetchMap } from "@/lib/prefetch"
 import { DEFAULT_REGION, MAP_BOUNDS } from "@/lib/regions"
 import { centerOffset, isMobile, mapInsets } from "@/lib/sheet"
 import { campsFor, SITE_TYPES, SITES } from "@/lib/sites"
-import { textGeo } from "@/lib/text-geo"
 import { useMapStore } from "@/store/use-map-store"
 import {
 	addModelAnnotations,
@@ -48,7 +47,6 @@ import {
 	setModelOpacity,
 	showModelAnnotations,
 } from "./oberaden-model"
-import { addTextLayers, showText } from "./text-overlay"
 
 // Startansicht aus dem URL-Hash (#zoom/lat/lon), sonst der Kreis
 function initialView() {
@@ -660,10 +658,6 @@ export default function MapView({ onMapReady }) {
 	// Das Netz hat Vorrang, eigene Routen gibt es nur ohne Netz
 	const routes = network?.routes ?? localRoutes
 	const selectedSite = useMapStore((s) => s.selectedSite)
-	const selectedText = useMapStore((s) => s.selectedText)
-	const timelineBottom = useMapStore((s) =>
-		isMobile() ? 0 : s.timelineInset.bottom,
-	)
 	const searchHit = useMapStore((s) => s.searchHit)
 
 	useEffect(() => {
@@ -700,7 +694,6 @@ export default function MapView({ onMapReady }) {
 					?.classList.remove("maplibregl-compact-show")
 			}
 			addAnalysisLayers(map)
-			addTextLayers(map)
 			addSearchLayers(map)
 			setPrefetchMap(map)
 			setMap(map)
@@ -1116,12 +1109,6 @@ export default function MapView({ onMapReady }) {
 		})
 	}, [result, network, map])
 
-	// Angeklickte Textstelle zeigen, mit Kamerafahrt und Animation
-	useEffect(() => {
-		if (!alive(map)) return
-		return showText(map, selectedText ? textGeo(selectedText) : null)
-	}, [selectedText, map])
-
 	useEffect(() => {
 		if (!alive(map)) return
 		const data = searchHit
@@ -1153,8 +1140,7 @@ export default function MapView({ onMapReady }) {
 					sx={{
 						position: "absolute",
 						left: "50%",
-						// Über der Zeitleiste der Texte
-						bottom: Math.max(44, timelineBottom + 12),
+						bottom: 44,
 						transform: "translateX(-50%)",
 						display: "flex",
 						alignItems: "center",

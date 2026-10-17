@@ -1,19 +1,12 @@
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter"
-import { EB_Garamond, Source_Sans_3 } from "next/font/google"
+import { Source_Sans_3 } from "next/font/google"
 import { preconnect } from "react-dom"
 import { assetUrl, TILES } from "@/config"
 import { STARTUP_FILES } from "@/lib/preload"
 import Providers from "./providers"
 import "./globals.css"
 
-// Antiqua für die antiken Texte, wird beim Build eingebettet
-const serif = EB_Garamond({
-	subsets: ["latin", "greek"],
-	style: ["normal", "italic"],
-	variable: "--font-serif",
-})
-
-// Serifenlose für Oberfläche und Sprechblasen. system-ui löst nicht überall
+// Serifenlose für die Oberfläche. system-ui löst nicht überall
 // auf eine Proportionalschrift auf (in manchen Linux-Browsern Monospace).
 const sans = Source_Sans_3({
 	subsets: ["latin"],
@@ -66,7 +59,7 @@ export default function RootLayout({ children }) {
 	for (const origin of TILE_ORIGINS)
 		preconnect(origin, { crossOrigin: "anonymous" })
 	return (
-		<html lang="de" className={`${serif.variable} ${sans.variable}`}>
+		<html lang="de" className={sans.variable}>
 			<head>
 				<script dangerouslySetInnerHTML={{ __html: EARLY_FETCH }} />
 			</head>

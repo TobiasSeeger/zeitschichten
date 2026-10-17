@@ -2,18 +2,16 @@ import { assetUrl } from "@/config"
 import rivers from "@/data/fluesse.json"
 import sources from "@/data/quellen.json"
 import roads from "@/data/roemerstrassen.json"
-import texts from "@/data/texte.json"
 import { BASE_LAYERS, OVERLAYS } from "./layers"
 import { resolveSource } from "./literature"
 import { inMapBounds } from "./regions"
 import { SITE_TYPE_BY_ID, SITES } from "./sites"
-import { hasTextGeo } from "./text-geo"
 import { utmToLonLat } from "./utm"
 
 /**
  * Globale Suche über alles, was die Karte kennt: Fundorte, Flüsse,
- * Römerstraßen, antike Texte, Ebenen und Quellen. Heutige Orte kommen
- * zusätzlich aus OpenStreetMap (Photon).
+ * Römerstraßen, Ebenen und Quellen. Heutige Orte kommen zusätzlich aus
+ * OpenStreetMap (Photon).
  */
 
 // Lateinische Namen, die in den Daten selbst nicht stehen
@@ -31,30 +29,6 @@ const RIVER_LATIN = {
 	Ems: "Amisia",
 	Weser: "Visurgis",
 	Elbe: "Albis",
-}
-
-// Lateinische Suchwörter, die in deutschen Übersetzungen anders heißen.
-// Nur für die Texte, Dio ist griechisch überliefert.
-const LATIN_TERMS = {
-	rhenus: "rhein",
-	lupia: "lippe",
-	luppia: "lippe",
-	amisia: "ems",
-	visurgis: "weser",
-	albis: "elbe",
-	mosa: "maas",
-	bructeri: "brukterer",
-	sugambri: "sugambrer",
-	sygambri: "sugambrer",
-	cherusci: "cherusker",
-	chatti: "chatten",
-	marsi: "marser",
-	angrivarii: "angrivarier",
-	teutoburgiensis: "teutoburger",
-	castra: "lager",
-	castellum: "kastell",
-	legio: "legion",
-	pontes: "brucken",
 }
 
 const normChar = (c) =>
@@ -231,24 +205,6 @@ function buildIndex() {
 		})
 	}
 
-	for (const t of texts) {
-		entries.push({
-			kind: "text",
-			key: `text:${t.id}`,
-			id: t.id,
-			label: t.title,
-			secondary: `${t.author}, ${t.work} ${t.passage} · ${t.year}`,
-			geo: hasTextGeo(t.id),
-			fields: [
-				field(t.title, 4),
-				field(`${t.author} ${t.work} ${t.passage}`, 3),
-				field(t.german, 1),
-				field(t.latin, 1),
-				field(t.map, 1),
-			],
-		})
-	}
-
 	for (const l of [...BASE_LAYERS, ...OVERLAYS]) {
 		const base = BASE_LAYERS.includes(l)
 		entries.push({
@@ -319,7 +275,7 @@ function snippet(entry, tokens) {
 	return null
 }
 
-const LIMITS = { site: 6, river: 4, road: 4, text: 6, layer: 4, source: 4 }
+const LIMITS = { site: 6, river: 4, road: 4, layer: 4, source: 4 }
 
 /**
  * Lokale Treffer, nach Relevanz sortiert und je Art begrenzt. Mit kinds
@@ -341,16 +297,6 @@ export function searchLocal(query, { kinds, limit } = {}) {
 			let s = tokenScore(entry, tok)
 			let t = tok
 			let f = null
-			// Lateinisches Wort, deutsch übersetzt: lupia -> lippe
-			if (!s && entry.kind === "text") {
-				const latin = Object.keys(LATIN_TERMS).find(
-					(k) => tok.length >= 3 && k.startsWith(tok),
-				)
-				if (latin) {
-					t = LATIN_TERMS[latin]
-					s = tokenScore(entry, t)
-				}
-			}
 			// Tippfehler: "Kalkrise" -> Kalkriese
 			if (!s) {
 				for (const fl of entry.fields) {

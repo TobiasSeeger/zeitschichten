@@ -4,7 +4,6 @@ import BorderOuterIcon from "@mui/icons-material/BorderOuter"
 import CloseIcon from "@mui/icons-material/Close"
 import GpsFixedIcon from "@mui/icons-material/GpsFixed"
 import HistoryIcon from "@mui/icons-material/History"
-import HistoryEduIcon from "@mui/icons-material/HistoryEdu"
 import LayersIcon from "@mui/icons-material/Layers"
 import LocationCityIcon from "@mui/icons-material/LocationCity"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
@@ -55,7 +54,6 @@ const GROUPS = {
 	site: "Fundorte",
 	river: "Flüsse",
 	road: "Römerstraßen",
-	text: "Texte",
 	layer: "Ebenen",
 	source: "Quellen",
 	area: "Gebirge und Gebiete",
@@ -65,16 +63,15 @@ const GROUPS = {
 }
 
 // Arten, deren Namen das Feld beim Tippen ergänzt
-const COMPLETES = ["site", "river", "road", "text", "layer", "area", "place"]
+const COMPLETES = ["site", "river", "road", "layer", "area", "place"]
 
 // Arten aus dem lokalen Index, ihre Geometrie kommt beim Wählen von dort
-const LOCAL_KINDS = ["site", "river", "road", "text", "layer", "source"]
+const LOCAL_KINDS = ["site", "river", "road", "layer", "source"]
 
 const FILTERS = [
 	{ id: "all", label: "Alle" },
 	{ id: "site", label: "Fundorte", kinds: ["site"] },
 	{ id: "place", label: "Orte, Gebiete", kinds: [] },
-	{ id: "text", label: "Texte", kinds: ["text"] },
 	{ id: "water", label: "Flüsse, Straßen", kinds: ["river", "road"] },
 	{ id: "layer", label: "Ebenen", kinds: ["layer"] },
 	{ id: "source", label: "Quellen", kinds: ["source"] },
@@ -110,8 +107,6 @@ function KindIcon({ option }) {
 			return <WavesIcon sx={{ ...sx, color: "#1565c0" }} />
 		case "road":
 			return <RouteIcon sx={sx} />
-		case "text":
-			return <HistoryEduIcon sx={{ ...sx, color: "#6a1b9a" }} />
 		case "layer":
 			return <LayersIcon sx={sx} />
 		case "source":
@@ -430,7 +425,6 @@ export default function SearchBox({ getMap, desktop }) {
 		const s = useMapStore.getState()
 		const map = getMap()
 		if (!desktop) s.setPanelOpen(false)
-		if (o.kind !== "text") s.setSelectedText(null)
 		if (o.kind === "site") {
 			s.setSearchHit(null)
 			s.setInspect(null)
@@ -476,13 +470,6 @@ export default function SearchBox({ getMap, desktop }) {
 				})
 			} else mark(o, [o.lon, o.lat])
 			fit(o.bounds, 13)
-		} else if (o.kind === "text") {
-			s.setSearchHit(null)
-			s.setSelectedSite(null)
-			// Die Lesekarte der Zeitleiste öffnet sich, auf dem Handy über dem
-			// eingeklappten Sheet
-			s.setSelectedText(o.id)
-			if (!desktop) s.setPanelOpen(false)
 		} else if (o.kind === "layer") {
 			if (o.base) s.setBaseLayer(o.id)
 			else s.setOverlay(o.id, { visible: true })

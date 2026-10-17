@@ -158,12 +158,6 @@ export const useMapStore = create((set) => ({
 	customLayers: typeof window === "undefined" ? [] : loadServices(),
 	selectedSite: null,
 	inspect: null,
-	// Aufgeschlagener Text der Zeitleiste, die Karte zeigt seine Orte
-	selectedText: null,
-	// Zeitleiste der Texte am unteren Kartenrand, auf dem Handy anfangs zu
-	timelineOpen: typeof window !== "undefined" && window.innerWidth >= 900,
-	// Von Zeitleiste und Lesekarte verdeckte Kartenränder in Pixeln
-	timelineInset: { bottom: 0, left: 0 },
 	// Hervorgehobener Suchtreffer (GeoJSON-Feature) auf der Karte
 	searchHit: null,
 	// Rang des Kandidaten, über dem in der Liste die Maus steht
@@ -272,14 +266,5 @@ export const useMapStore = create((set) => ({
 		set((s) => ({ selectedSite, ...(selectedSite && showCard(s)) })),
 	setInspect: (inspect) =>
 		set((s) => ({ inspect, ...(inspect && showCard(s)) })),
-	setSelectedText: (selectedText) => set({ selectedText }),
-	setTimelineOpen: (timelineOpen) => set({ timelineOpen }),
-	setTimelineInset: (timelineInset) =>
-		set((s) =>
-			s.timelineInset.bottom === timelineInset.bottom &&
-			s.timelineInset.left === timelineInset.left
-				? s
-				: { timelineInset },
-		),
 	setSearchHit: (searchHit) => set({ searchHit }),
 }))

@@ -17,29 +17,26 @@ describe("editDistance", () => {
 })
 
 describe("searchLocal", () => {
-	test("findet Texte über das Stichwort", () => {
-		const hits = searchLocal("Varus")
-		expect(hits[0].label).toContain("Kalkriese")
-		expect(hits.some((h) => h.kind === "text")).toBe(true)
+	test("findet Ebenen über das Stichwort", () => {
+		const hits = searchLocal("Uraufnahme")
+		expect(hits[0].label).toContain("Uraufnahme")
+		expect(hits.some((h) => h.kind === "layer")).toBe(true)
 	})
 	test("lateinischer Flussname", () => {
 		expect(searchLocal("Lupia")[0].label).toBe("Lippe")
 	})
-	test("lateinisches Wort trifft die Übersetzung", () => {
-		const hits = searchLocal("Cherusci", { kinds: ["text"] })
-		expect(hits.map((h) => h.id)).toContain("dio-54-33")
-	})
 	test("Tippfehler mit Vorschlag", () => {
-		const hits = searchLocal("Kalkrise")
+		const hits = searchLocal("Neuaufnhame")
 		expect(hits[0].fuzzy).toBe(true)
-		expect(correction("Kalkrise", hits)).toBe("Kalkriese")
+		expect(correction("Neuaufnhame", hits)).toBe("Neuaufnahme")
 	})
 	test("kein Vorschlag bei genauen Treffern", () => {
-		expect(correction("Varus", searchLocal("Varus"))).toBeNull()
+		expect(correction("Weser", searchLocal("Weser"))).toBeNull()
 	})
 	test("Filter nach Art", () => {
-		const hits = searchLocal("Haltern", { kinds: ["source"] })
-		expect(hits.every((h) => h.kind === "source")).toBe(true)
+		const hits = searchLocal("Karte", { kinds: ["layer"] })
+		expect(hits.length).toBeGreaterThan(0)
+		expect(hits.every((h) => h.kind === "layer")).toBe(true)
 	})
 })
 

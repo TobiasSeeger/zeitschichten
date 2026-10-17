@@ -1,7 +1,6 @@
 "use client"
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import ExploreIcon from "@mui/icons-material/Explore"
 import LayersIcon from "@mui/icons-material/Layers"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
@@ -12,10 +11,8 @@ import {
 	CircularProgress,
 	Drawer,
 	IconButton,
-	Paper,
 	Tab,
 	Tabs,
-	Tooltip,
 	Typography,
 	useMediaQuery,
 } from "@mui/material"
@@ -28,7 +25,6 @@ import { useMapStore } from "@/store/use-map-store"
 import BottomSheet from "./bottom-sheet"
 import EasyPanel, { EasyContent } from "./easy-panel"
 import SearchBox from "./search-box"
-import TextsTimeline from "./texts-timeline"
 
 const MapView = dynamic(() => import("./map-view"), { ssr: false })
 
@@ -123,8 +119,6 @@ export default function AppShell() {
 	const setOpen = useMapStore((s) => s.setPanelOpen)
 	const sheetFrac = useMapStore((s) => s.sheetFrac)
 	const setSheetFrac = useMapStore((s) => s.setSheetFrac)
-	// Solange ein Text aufgeschlagen ist, liegt seine Lesekarte links
-	const textShown = useMapStore((s) => Boolean(s.selectedText))
 	const hasCard = useMapStore((s) => Boolean(s.selectedSite || s.inspect))
 
 	const onMapReady = useCallback((map) => {
@@ -246,34 +240,8 @@ export default function AppShell() {
 			>
 				<MapView onMapReady={onMapReady} />
 				<SearchBox getMap={getMap} desktop={desktop} />
-				{desktop && !open && !textShown && <EasyPanel onFlyTo={flyTo} />}
-				{desktop && !open && textShown && (
-					// Die Startkarte mit ihrem Knopf weicht der Lesekarte, die
-					// Leiste muss trotzdem aufgehen, auch während der Erzählung
-					<Paper
-						elevation={4}
-						sx={{
-							position: "absolute",
-							top: 16,
-							// rechts neben der Suchleiste
-							left: 16 + 340 + 8,
-							zIndex: 4,
-							borderRadius: 2,
-						}}
-					>
-						<Tooltip title="Ebenen, Einstellungen und Quellen">
-							<IconButton
-								onClick={() => setOpen(true)}
-								aria-label="Seitenleiste ausklappen"
-								sx={{ width: 52, height: 52, borderRadius: 2 }}
-							>
-								<ChevronRightIcon />
-							</IconButton>
-						</Tooltip>
-					</Paper>
-				)}
+				{desktop && !open && <EasyPanel onFlyTo={flyTo} />}
 				{desktop && <InfoCards />}
-				<TextsTimeline />
 				{!desktop && (
 					<BottomSheet
 						open={open}
