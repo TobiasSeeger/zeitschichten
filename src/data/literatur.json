@@ -1,50 +1,5 @@
 [
 	{
-		"id": "gerlach2022",
-		"type": "article-journal",
-		"author": [
-			{
-				"family": "Gerlach",
-				"given": "Renate"
-			},
-			{
-				"family": "Meurers-Balke",
-				"given": "Jutta"
-			},
-			{
-				"family": "Kalis",
-				"given": "Arie J."
-			}
-		],
-		"issued": {
-			"date-parts": [[2022]]
-		},
-		"title": "The Lower Rhine (Germany) in Late Antiquity. A time of dissolving structures",
-		"container-title": "Netherlands Journal of Geosciences",
-		"volume": "101",
-		"page": "e14",
-		"DOI": "10.1017/njg.2022.11"
-	},
-	{
-		"id": "lwl2023lippe",
-		"type": "webpage",
-		"author": [
-			{
-				"literal": "Landschaftsverband Westfalen-Lippe"
-			}
-		],
-		"issued": {
-			"date-parts": [[2023]]
-		},
-		"title": "Viermal komplett neu aufgebaut",
-		"container-title": "LWL-Pressemitteilungen",
-		"genre": "Pressemitteilung",
-		"URL": "https://www.lwl.org/pressemitteilungen/nr_mitteilung.php?urlID=56865",
-		"accessed": {
-			"date-parts": [[2026, 10, 6]]
-		}
-	},
-	{
 		"id": "geobasis-dgm1",
 		"type": "dataset",
 		"author": [

@@ -21,7 +21,7 @@ const SOURCES = {
 	"osm-gewaesser": { refs: ["osm"] },
 	"alte-flusslaeufe": {
 		own: "Alte Flussläufe",
-		refs: ["geobasis-uraufnahme", "gerlach2022", "lwl2023lippe", "osm"],
+		refs: ["geobasis-uraufnahme", "osm"],
 	},
 	uraufnahme: { refs: ["geobasis-uraufnahme"] },
 	"aue-preussisch": { refs: ["nrw-uesg"] },

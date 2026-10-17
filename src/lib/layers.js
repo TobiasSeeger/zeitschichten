@@ -191,7 +191,7 @@ export const OVERLAYS = [
 		kind: "oldrivers",
 		group: "Gewässer",
 		label: "Alte Flussläufe",
-		note: "Dunkelblau Rhein, Lippe, Ems und Weser in NRW wie in der Uraufnahme um 1840, im Kreis Minden-Lübbecke die Weser wie auf der Kreiskarte Minden 1843, rot gestrichelt der römerzeitliche Lauf bei Haltern und Xanten, hellblau der heutige, wo die Uraufnahme nichts hergibt oder außerhalb NRW.",
+		note: "Dunkelblau Rhein, Lippe, Ems und Weser in NRW wie in der Uraufnahme um 1840, im Kreis Minden-Lübbecke die Weser wie auf der Kreiskarte Minden 1843, hellblau der heutige, wo die Uraufnahme nichts hergibt oder außerhalb NRW. Bei Haltern und Xanten bleibt eine kurze Lücke: Dort enthalten die Daten den römerzeitlichen Lauf nach der Literatur, den diese Karte nicht zeigt.",
 		attribution: `${GEOBASIS_NRW}, ${OSM}`,
 		opacity: 0.9,
 	},
@@ -305,7 +305,7 @@ export const OVERLAYS = [
 		group: HISTORIC_GROUP,
 		year: 1801,
 		label: "Tranchot/v. Müffling (1801–1828)",
-		note: "Nur Rheinland, rechts des Rheins etwa bis Duisburg, Wuppertal und Siegen. Xanten liegt drin, die Lippelager und Bergkamen nicht. Ab Zoom 11.",
+		note: "Nur Rheinland, rechts des Rheins etwa bis Duisburg, Wuppertal und Siegen. Ab Zoom 11.",
 		wms: "https://www.wms.nrw.de/geobasis/wms_nw_tranchot",
 		layers: "nw_tranchot",
 		attribution: GEOBASIS_NRW,
@@ -359,7 +359,7 @@ export const OVERLAYS = [
 		jump: [6.45, 51.66, 12],
 		group: "Denkmäler",
 		label: "Bodendenkmäler NRW (INSPIRE)",
-		note: "Lückenhaft, die Römerlager fehlen dort",
+		note: "Lückenhaft",
 		wms: "https://www.wms.nrw.de/wms/wms_nw_inspire-denkmal",
 		layers:
 			"ProtectedSites_Archaeological_Surface,ProtectedSites_Archaeological_Line,ProtectedSites_Archaeological_Point",
@@ -557,7 +557,6 @@ export function styleLayersOf(layer) {
 		return [
 			{ id: `${layer.id}-casing`, opacity: "line-opacity" },
 			{ id: layer.id, opacity: "line-opacity" },
-			{ id: `${layer.id}-roemisch`, opacity: "line-opacity" },
 		]
 	}
 	return partsOf(layer).map((_, i) => ({
@@ -1005,19 +1004,6 @@ function oldRiverStyle(layer) {
 					],
 					"line-opacity": layer.opacity,
 					"line-width": width(1.5, 4),
-				},
-			},
-			{
-				id: `${layer.id}-roemisch`,
-				type: "line",
-				source: layer.id,
-				filter: ["==", ["get", "kind"], "roemisch"],
-				layout: { visibility: "none", "line-join": "round" },
-				paint: {
-					"line-color": "#c62828",
-					"line-opacity": layer.opacity,
-					"line-width": width(2, 4.5),
-					"line-dasharray": [2, 1.5],
 				},
 			},
 		],
