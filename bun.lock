@@ -23,7 +23,6 @@
         "pbf": "^5.1.2",
         "react": "^19",
         "react-dom": "^19",
-        "three": "^0.186.1",
         "zustand": "^5",
       },
       "devDependencies": {
@@ -403,8 +402,6 @@
     "supports-preserve-symlinks-flag": ["supports-preserve-symlinks-flag@1.0.0", "", {}, "sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w=="],
 
     "sync-fetch-undici": ["sync-fetch-undici@0.7.1", "", { "dependencies": { "whatwg-mimetype": "^5.0.0" } }, "sha512-t/rJBTRr3/WCs/04MnLStgGGFac1Ge6WDugNxO+KoMqtfmWENMPJbtAmGqIWnwsXi+B7Uh0P0ea2QRkKIZTIPg=="],
-
-    "three": ["three@0.186.1", "", {}, "sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA=="],
 
     "tinyqueue": ["tinyqueue@3.0.0", "", {}, "sha512-gRa9gwYU3ECmQYv3lslts5hxuIa90veaEcxDYuu3QGOIAEM2mOZkVHp48ANJuu1CURtRdHKUBY5Lm1tHV+sD4g=="],
 

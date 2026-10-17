@@ -44,7 +44,6 @@ const SWITCHES = [
 	"showStages",
 	"showCandidates",
 	"showRoads",
-	"showModel",
 	"showRegion",
 ]
 
@@ -128,9 +127,6 @@ export const useMapStore = create((set) => ({
 	// Höhe des aufgeklappten Sheets als Anteil der Fensterhöhe (Handy)
 	sheetFrac: 0.5,
 	showRoads: true,
-	// 3D-Rekonstruktion des Lagers Oberaden, sichtbar ab Zoom 15
-	showModel: true,
-	modelOpacity: 1,
 
 	// Potenzialanalyse
 	params: DEFAULT_PARAMS,
@@ -216,8 +212,6 @@ export const useMapStore = create((set) => ({
 	setFold: (id, open) => set((s) => ({ folds: { ...s.folds, [id]: open } })),
 	setSheetFrac: (sheetFrac) => set({ sheetFrac }),
 	setShowRoads: (showRoads) => set({ showRoads }),
-	setShowModel: (showModel) => set({ showModel }),
-	setModelOpacity: (modelOpacity) => set({ modelOpacity }),
 	setParams: (patch) => set((s) => ({ params: { ...s.params, ...patch } })),
 	// Modell und Tagesmarsch-Ausgangspunkte auf die Standardwerte
 	resetParams: () =>

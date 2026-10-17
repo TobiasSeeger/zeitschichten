@@ -6,7 +6,6 @@ __pycache__
 
 # Von postinstall kopiert (scripts/copy-maplibre-worker.mjs)
 public/maplibre
-public/draco
 
 # Altkarten: Kacheln werden aus Scans gerechnet (README, Abschnitt Altkarten)
 public/altkarten

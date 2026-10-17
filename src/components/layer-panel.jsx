@@ -146,7 +146,6 @@ export default function LayerPanel({ onFlyTo }) {
 			{main.map((layer) => (
 				<OverlayItem key={layer.id} layer={layer} onFlyTo={onFlyTo} />
 			))}
-			<ModelSwitch />
 
 			<SectionTitle>{HISTORIC_GROUP}</SectionTitle>
 			<HistoricLayers layers={historic} onFlyTo={onFlyTo} />
@@ -364,38 +363,6 @@ function SitesRow() {
 						/>
 					))}
 				</Stack>
-			}
-		/>
-	)
-}
-
-function ModelSwitch() {
-	const showModel = useMapStore((s) => s.showModel)
-	const setShowModel = useMapStore((s) => s.setShowModel)
-	const modelOpacity = useMapStore((s) => s.modelOpacity)
-	const setModelOpacity = useMapStore((s) => s.setModelOpacity)
-	const label = "3D-Modell Römerlager Oberaden"
-	return (
-		<LayerRow
-			id="model3d"
-			checked={showModel}
-			onChange={setShowModel}
-			label={label}
-			details={
-				<>
-					<Details
-						layer={{
-							id: "model3d",
-							label,
-							note: "Ab Zoomstufe 15, mit Beschriftungen und Link. Modell aus der Bergkamen-App, Maßstab nach dem LWL-Grabungsplan, Lage am erhaltenen Graben der Nordfront",
-						}}
-					/>
-					<Opacity
-						value={modelOpacity}
-						onChange={setModelOpacity}
-						label={label}
-					/>
-				</>
 			}
 		/>
 	)

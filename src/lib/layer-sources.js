@@ -56,10 +56,6 @@ const SOURCES = {
 			"osm",
 		],
 	},
-	model3d: {
-		own: "3D-Modell Römerlager Oberaden, Maßstab nach Grabungsplan, Lage am erhaltenen Graben der Nordfront (DGM1)",
-		refs: ["bergkamen-oberaden", "kuehlborn2011"],
-	},
 	// Gelände
 	relief: { refs: ["mapzen-terrain"] },
 	"schummerung-nrw": { refs: ["geobasis-schummerung"] },

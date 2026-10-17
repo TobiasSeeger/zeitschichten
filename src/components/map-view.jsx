@@ -39,14 +39,6 @@ import { DEFAULT_REGION, MAP_BOUNDS } from "@/lib/regions"
 import { centerOffset, isMobile, mapInsets } from "@/lib/sheet"
 import { campsFor, SITE_TYPES, SITES } from "@/lib/sites"
 import { useMapStore } from "@/store/use-map-store"
-import {
-	addModelAnnotations,
-	MODEL_LAYER,
-	MODEL_MIN_ZOOM,
-	oberadenModelLayer,
-	setModelOpacity,
-	showModelAnnotations,
-} from "./oberaden-model"
 
 // Startansicht aus dem URL-Hash (#zoom/lat/lon), sonst der Kreis
 function initialView() {
@@ -967,29 +959,6 @@ export default function MapView({ onMapReady }) {
 			"#d84315",
 		])
 	}, [showCandidates, hoveredCandidate, map])
-
-	// 3D-Lager Oberaden: three.js und Modell erst beim ersten Heranzoomen laden
-	const showModel = useMapStore((s) => s.showModel)
-	useEffect(() => {
-		if (!alive(map)) return
-		if (!map.getSource("oberaden-poi")) addModelAnnotations(map)
-		showModelAnnotations(map, showModel)
-		if (!showModel) {
-			if (map.getLayer(MODEL_LAYER)) map.removeLayer(MODEL_LAYER)
-			return
-		}
-		const add = () => {
-			if (map.getZoom() < MODEL_MIN_ZOOM || map.getLayer(MODEL_LAYER)) return
-			map.addLayer(oberadenModelLayer(), "sites")
-		}
-		add()
-		map.on("zoomend", add)
-		return () => map.off("zoomend", add)
-	}, [showModel, map])
-	const modelOpacity = useMapStore((s) => s.modelOpacity)
-	useEffect(() => {
-		if (alive(map)) setModelOpacity(map, modelOpacity)
-	}, [modelOpacity, map])
 
 	// Gewässer der Analyse: abgeleitetes Netz als Linien, OSM direkt aus den
 	// Vektorkacheln (Ebene "osm-gewaesser")

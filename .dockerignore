@@ -3,6 +3,5 @@ node_modules
 out
 .git
 public/maplibre
-public/draco
 deploy/deploy.env
 .env*.local

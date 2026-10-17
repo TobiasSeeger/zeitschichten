@@ -69,7 +69,6 @@ describe("Ebenen", () => {
 			"stops",
 			"roads",
 			"waterways",
-			"model3d",
 		])
 			expect(hasLayerSources(id)).toBe(true)
 	})
