@@ -10,9 +10,11 @@ import { throughGates } from "@/lib/camp-gates"
 import { SHORT_CREDIT } from "@/lib/citation"
 import { circlePolygon } from "@/lib/geo"
 import {
+	ALT_BLUE,
 	BASE_LAYERS,
 	FONT,
 	GLYPHS,
+	HEUTE_BLUE,
 	MOOR_1844_FILE,
 	MOOR_FILE,
 	MOOR_LAYER,
@@ -136,7 +138,14 @@ function addAnalysisLayers(map) {
 		source: "waterways",
 		layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
 		paint: {
-			"line-color": "#1565c0",
+			// dunkel der alte, belegte Lauf, hell der heutige
+			"line-color": [
+				"match",
+				["get", "herkunft"],
+				"heute",
+				HEUTE_BLUE,
+				ALT_BLUE,
+			],
 			"line-width": riverWidth([2.5, 5.5], [0.8, 2]),
 		},
 	})
@@ -996,12 +1005,11 @@ export default function MapView({ onMapReady }) {
 	useEffect(() => {
 		if (!alive(map)) return
 		const dem = waterSource !== "osm"
-		// Natürliche Flussläufe: große Flüsse aus dem Netz, Bäche im Kreis.
-		// Lippe, Weser usw. im alten Lauf statt grob aus dem Höhenmodell.
-		const derived = [
-			...(network?.rivers.features ?? []),
-			...(dem && derivedWaterways ? derivedWaterways.features : []),
-		]
+		// Gezeichnete Läufe: in der Region die der Analyse (im Kreis nach den
+		// Kreiskarten, sonst heutige Flüsse), dazu die alten Läufe der großen
+		// Flüsse. Das grobe Netz aus dem Höhenmodell zeigt die Karte nicht,
+		// seine Rasterlinien lägen neben den echten Läufen.
+		const derived = dem && derivedWaterways ? derivedWaterways.features : []
 		const features = oldRivers
 			? [...withoutOldRivers(derived), ...oldRiverFeatures()]
 			: derived
@@ -1017,7 +1025,6 @@ export default function MapView({ onMapReady }) {
 		}
 	}, [
 		derivedWaterways,
-		network,
 		showWaterways,
 		waterSource,
 		oldRivers,
